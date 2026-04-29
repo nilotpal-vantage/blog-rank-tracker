@@ -14,30 +14,58 @@
   .bucket-page2 { background: #fef3c7; color: #92400e; }
   .bucket-page3 { background: #fee2e2; color: #991b1b; }
   .bucket-nodata { background: #f1f5f9; color: #64748b; }
-  .delta-up { color: #16a34a; }   /* improved (lower position number) */
-  .delta-down { color: #dc2626; } /* worsened */
+  .delta-up { color: #16a34a; }
+  .delta-down { color: #dc2626; }
   .delta-flat { color: #94a3b8; }
   table tbody tr { cursor: pointer; }
   table tbody tr:hover { background: #f8fafc; }
   .sparkline { display: inline-block; }
+  .seg-btn { padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #e2e8f0; background: white; color: #475569; cursor: pointer; }
+  .seg-btn-active { background: #0f172a; color: white; border-color: #0f172a; }
+  select, input[type="date"], input[type="search"] {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
 
-<!-- Header -->
 <header class="bg-white border-b border-slate-200">
-  <div class="max-w-7xl mx-auto px-6 py-5">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold tracking-tight">Blog Rank Tracker</h1>
-        <p id="meta-line" class="text-sm text-slate-500 mt-1">Loading…</p>
-      </div>
-      <div class="text-right text-xs text-slate-400">
-        <div id="period-line"></div>
-      </div>
+  <div class="max-w-7xl mx-auto px-6 py-5 flex items-start justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">Blog Rank Tracker</h1>
+      <p id="meta-line" class="text-sm text-slate-500 mt-1">Loading…</p>
     </div>
+    <div class="text-right text-xs text-slate-400" id="period-line"></div>
   </div>
 </header>
+
+<!-- Window controls -->
+<div class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center gap-4 flex-wrap">
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-slate-500 uppercase tracking-wider mr-1">Window</span>
+      <button data-window="4"  class="window-btn seg-btn">4 weeks</button>
+      <button data-window="12" class="window-btn seg-btn">12 weeks</button>
+      <button data-window="26" class="window-btn seg-btn">26 weeks</button>
+      <button data-window="52" class="window-btn seg-btn">52 weeks</button>
+      <button data-window="custom" class="window-btn seg-btn">Custom</button>
+    </div>
+    <div id="custom-range" class="hidden flex items-center gap-2">
+      <span class="text-xs text-slate-500">From</span>
+      <select id="custom-start" class="text-xs"></select>
+      <span class="text-xs text-slate-500">to</span>
+      <select id="custom-end" class="text-xs"></select>
+    </div>
+    <div class="ml-auto flex items-center gap-2">
+      <button id="dl-summary" class="seg-btn">⬇ Summary CSV</button>
+      <button id="dl-weekly"  class="seg-btn">⬇ Weekly CSV</button>
+    </div>
+  </div>
+</div>
 
 <!-- Tabs -->
 <nav class="bg-white border-b border-slate-200">
@@ -51,27 +79,24 @@
 
 <main class="max-w-7xl mx-auto px-6 py-6">
 
-  <!-- ─── Overview ─── -->
   <section id="panel-overview" class="hidden">
     <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6"></div>
     <div class="grid md:grid-cols-2 gap-6">
       <div class="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Gainers (28d)</h3>
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Gainers</h3>
         <div id="overview-gainers" class="text-sm"></div>
       </div>
       <div class="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Droppers (28d)</h3>
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Droppers</h3>
         <div id="overview-droppers" class="text-sm"></div>
       </div>
     </div>
   </section>
 
-  <!-- ─── Rank Tracker (default) ─── -->
   <section id="panel-tracker">
     <div class="bg-white rounded-lg border border-slate-200 mb-4 p-4">
       <div class="flex flex-wrap items-center gap-3">
-        <input id="search-box" type="search" placeholder="Search title or slug…"
-               class="px-3 py-2 border border-slate-300 rounded text-sm w-64 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        <input id="search-box" type="search" placeholder="Search title or slug…" class="w-64">
         <div class="flex gap-1 text-xs">
           <button data-filter="page1"   class="filter-btn px-3 py-1.5 rounded border bucket-page1 border-green-300">Page 1</button>
           <button data-filter="page2"   class="filter-btn px-3 py-1.5 rounded border bucket-page2 border-amber-300">Page 2</button>
@@ -98,7 +123,7 @@
             <th class="px-3 py-3 text-right font-medium" data-sort="clicks">Clicks</th>
             <th class="px-3 py-3 text-right font-medium" data-sort="ctr">CTR</th>
             <th class="px-3 py-3 text-center font-medium">Bucket</th>
-            <th class="px-3 py-3 text-center font-medium">12w trend</th>
+            <th class="px-3 py-3 text-center font-medium">Trend</th>
           </tr>
         </thead>
         <tbody id="tracker-body"></tbody>
@@ -106,7 +131,6 @@
     </div>
   </section>
 
-  <!-- ─── Movers ─── -->
   <section id="panel-movers" class="hidden space-y-6">
     <div class="bg-white rounded-lg border border-slate-200 p-5">
       <h3 class="text-sm font-semibold text-slate-700 mb-3">Fell off Page 1 <span id="fell-count" class="text-slate-400 font-normal"></span></h3>
@@ -124,12 +148,11 @@
     </div>
   </section>
 
-  <!-- ─── CTR Fixes ─── -->
   <section id="panel-ctr" class="hidden">
     <div class="bg-white rounded-lg border border-slate-200 p-5">
       <p class="text-sm text-slate-600 mb-4">
-        Posts ranking on <strong>page 1</strong> with <strong>CTR &lt; 1%</strong> and <strong>≥1k impressions</strong>.
-        These need title or meta description rewrites — not full content rewrites.
+        Posts ranking on <strong>page 1</strong> (in the selected window) with <strong>CTR &lt; 1%</strong> and <strong>≥1k impressions</strong>.
+        Title or meta description rewrites — not full content rewrites.
       </p>
       <div id="ctr-list" class="text-sm"></div>
     </div>
@@ -139,7 +162,7 @@
 
 <!-- Detail modal -->
 <div id="modal" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
-  <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+  <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
     <div class="p-5 border-b border-slate-200 flex items-start justify-between">
       <div class="flex-1 pr-4">
         <h3 id="modal-title" class="font-semibold text-base"></h3>
@@ -148,15 +171,34 @@
       <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
     </div>
     <div class="p-5">
-      <div id="modal-stats" class="grid grid-cols-2 gap-3 mb-5"></div>
-      <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Position over last 12 weeks</h4>
-      <div id="modal-chart" class="mb-3"></div>
-      <table class="w-full text-xs">
-        <thead class="text-slate-500 border-b border-slate-200">
-          <tr><th class="text-left py-1.5 font-medium">Week</th><th class="text-right py-1.5 font-medium">Position</th></tr>
-        </thead>
-        <tbody id="modal-history"></tbody>
-      </table>
+      <div id="modal-stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500">Trend</h4>
+        <div class="flex gap-1">
+          <button data-metric="p"   class="metric-btn seg-btn">Position</button>
+          <button data-metric="i"   class="metric-btn seg-btn">Impressions</button>
+          <button data-metric="c"   class="metric-btn seg-btn">Clicks</button>
+          <button data-metric="ctr" class="metric-btn seg-btn">CTR</button>
+        </div>
+      </div>
+      <div id="modal-chart" class="mb-5"></div>
+
+      <details>
+        <summary class="text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-pointer">Weekly history table</summary>
+        <table class="w-full text-xs mt-2">
+          <thead class="text-slate-500 border-b border-slate-200">
+            <tr>
+              <th class="text-left py-1.5 font-medium">Week</th>
+              <th class="text-right py-1.5 font-medium">Pos</th>
+              <th class="text-right py-1.5 font-medium">Impr</th>
+              <th class="text-right py-1.5 font-medium">Clicks</th>
+              <th class="text-right py-1.5 font-medium">CTR</th>
+            </tr>
+          </thead>
+          <tbody id="modal-history"></tbody>
+        </table>
+      </details>
     </div>
   </div>
 </div>
@@ -166,22 +208,105 @@
 <script>
 // ─── State ──────────────────────────────────────────────────────────────
 const state = {
+  window: 4,             // 4, 12, 26, 52, or "custom"
+  customStart: null,     // ISO week string e.g. "2025-W30"
+  customEnd: null,
   search: "",
-  buckets: new Set(["page2", "page3+"]),  // default focus per user
+  buckets: new Set(["page2", "page3+"]),
   moversOnly: false,
   sort: "position",
   sortDir: "asc",
+  modalSlug: null,
+  modalMetric: "p",
 };
+
+const ALL_WEEKS = META.all_weeks || [];
+
+// ─── Window helpers ─────────────────────────────────────────────────────
+function currentWeeks() {
+  if (state.window === "custom") {
+    if (!state.customStart || !state.customEnd) return [];
+    return ALL_WEEKS.filter(w => w >= state.customStart && w <= state.customEnd);
+  }
+  return ALL_WEEKS.slice(-state.window);
+}
+
+function priorWeeks() {
+  const cur = currentWeeks();
+  if (cur.length === 0) return [];
+  const firstIdx = ALL_WEEKS.indexOf(cur[0]);
+  if (firstIdx <= 0) return [];
+  const priorEndIdx = firstIdx - 1;
+  const priorStartIdx = Math.max(0, priorEndIdx - cur.length + 1);
+  return ALL_WEEKS.slice(priorStartIdx, priorEndIdx + 1);
+}
+
+function aggregate(history, weeks) {
+  const wkSet = new Set(weeks);
+  let posImpSum = 0, imp = 0, clicks = 0;
+  history.forEach(h => {
+    if (!wkSet.has(h.w)) return;
+    if (h.p !== null && h.i > 0) posImpSum += h.p * h.i;
+    imp += h.i;
+    clicks += h.c;
+  });
+  return {
+    position: imp > 0 ? +(posImpSum / imp).toFixed(2) : null,
+    impressions: imp,
+    clicks: clicks,
+    ctr: imp > 0 ? +(clicks / imp).toFixed(4) : 0,
+  };
+}
+
+function bucketOf(pos) {
+  if (pos === null || pos === undefined) return "no-data";
+  if (pos <= 10) return "page1";
+  if (pos <= 20) return "page2";
+  return "page3+";
+}
+
+function computedRanks() {
+  const cur = currentWeeks();
+  const pri = priorWeeks();
+  return RANKINGS.map(r => {
+    const c = aggregate(r.history, cur);
+    const p = aggregate(r.history, pri);
+    const delta = (c.position !== null && p.position !== null) ? +(c.position - p.position).toFixed(2) : null;
+    return {
+      title: r.title,
+      slug: r.slug,
+      url: r.url,
+      tags: r.tags,
+      position: c.position,
+      prev_position: p.position,
+      delta,
+      impressions: c.impressions,
+      clicks: c.clicks,
+      ctr: c.ctr,
+      bucket: bucketOf(c.position),
+      prev_bucket: bucketOf(p.position),
+      history: r.history,
+    };
+  });
+}
 
 // ─── Header / meta ──────────────────────────────────────────────────────
 const fmtDate = s => new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 document.getElementById("meta-line").textContent =
-  `${META.post_count} posts · last refreshed ${fmtDate(META.generated_at)}`;
-document.getElementById("period-line").innerHTML =
-  `<div>Current: ${fmtDate(META.current_start)} → ${fmtDate(META.current_end)}</div>` +
-  `<div>vs ${fmtDate(META.previous_start)} → ${fmtDate(META.previous_end)}</div>`;
+  `${META.post_count} posts · ${ALL_WEEKS.length} weeks tracked · last refreshed ${fmtDate(META.generated_at)}`;
 
-// ─── Helpers ────────────────────────────────────────────────────────────
+function updatePeriodLine() {
+  const cur = currentWeeks();
+  const pri = priorWeeks();
+  const fmtWk = w => w || "—";
+  const html = cur.length
+    ? `<div>Window: ${fmtWk(cur[0])} → ${fmtWk(cur[cur.length-1])} (${cur.length} weeks)</div>` +
+      `<div>vs prior: ${fmtWk(pri[0])} → ${fmtWk(pri[pri.length-1])} (${pri.length} weeks)</div>`
+    : `<div>No weeks selected</div>`;
+  document.getElementById("period-line").innerHTML = html;
+}
+
+// ─── Render helpers ─────────────────────────────────────────────────────
 function bucketBadge(b) {
   const map = {
     "page1":   ["bucket-page1", "Page 1"],
@@ -196,7 +321,6 @@ function bucketBadge(b) {
 function deltaCell(d) {
   if (d === null || d === undefined) return `<span class="delta-flat">—</span>`;
   if (Math.abs(d) < 0.5) return `<span class="delta-flat">±0</span>`;
-  // Negative delta = lower position number = improvement (good)
   if (d < 0) return `<span class="delta-up font-medium">▲ ${Math.abs(d).toFixed(1)}</span>`;
   return `<span class="delta-down font-medium">▼ ${d.toFixed(1)}</span>`;
 }
@@ -212,19 +336,18 @@ function pct(n) {
   return (n * 100).toFixed(2) + "%";
 }
 
-function sparkline(history, w = 100, h = 28) {
-  if (!history || history.length === 0) return "";
-  const points = history.filter(h => h.p !== null);
-  if (points.length === 0) return `<span class="text-slate-300 text-xs">no data</span>`;
+function sparkline(history, weeks, w = 100, h = 28) {
+  const wkSet = new Set(weeks);
+  const points = history.filter(h => wkSet.has(h.w) && h.p !== null);
+  if (points.length === 0) return `<span class="text-slate-300 text-xs">—</span>`;
   const positions = points.map(p => p.p);
   const min = Math.min(...positions);
   const max = Math.max(...positions);
   const range = Math.max(max - min, 1);
-  // Position: lower = better, so we invert Y (higher in chart = lower position number = better)
   const stepX = w / Math.max(points.length - 1, 1);
   const pts = points.map((p, i) => {
     const x = i * stepX;
-    const y = ((p.p - min) / range) * (h - 4) + 2;  // higher pos number = lower in chart
+    const y = ((p.p - min) / range) * (h - 4) + 2;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(" ");
   const last = points[points.length - 1].p;
@@ -240,8 +363,7 @@ function applyFilters(rows) {
   let out = rows.slice();
   if (state.search) {
     const q = state.search.toLowerCase();
-    out = out.filter(r =>
-      r.title.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q));
+    out = out.filter(r => r.title.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q));
   }
   if (state.buckets.size > 0 && state.buckets.size < 4) {
     out = out.filter(r => state.buckets.has(r.bucket));
@@ -249,7 +371,6 @@ function applyFilters(rows) {
   if (state.moversOnly) {
     out = out.filter(r => r.delta !== null && Math.abs(r.delta) >= 5);
   }
-  // Sort
   const dir = state.sortDir === "asc" ? 1 : -1;
   out.sort((a, b) => {
     const av = a[state.sort], bv = b[state.sort];
@@ -262,7 +383,9 @@ function applyFilters(rows) {
 }
 
 function renderTracker() {
-  const rows = applyFilters(RANKINGS);
+  const ranks = computedRanks();
+  const rows = applyFilters(ranks);
+  const cur = currentWeeks();
   document.getElementById("row-count").textContent = rows.length;
   document.getElementById("tracker-body").innerHTML = rows.map(r => `
     <tr data-slug="${r.slug}" class="border-b border-slate-100 last:border-b-0">
@@ -277,115 +400,51 @@ function renderTracker() {
       <td class="px-3 py-3 text-right font-mono">${fmt(r.clicks)}</td>
       <td class="px-3 py-3 text-right font-mono">${pct(r.ctr)}</td>
       <td class="px-3 py-3 text-center">${bucketBadge(r.bucket)}</td>
-      <td class="px-3 py-3 text-center">${sparkline(r.history)}</td>
+      <td class="px-3 py-3 text-center">${sparkline(r.history, cur)}</td>
     </tr>
   `).join("");
-
   document.querySelectorAll("#tracker-body tr").forEach(tr => {
     tr.addEventListener("click", () => openModal(tr.dataset.slug));
   });
 }
 
-// ─── Filter wiring ──────────────────────────────────────────────────────
-document.getElementById("search-box").addEventListener("input", e => {
-  state.search = e.target.value;
-  renderTracker();
-});
-
-document.querySelectorAll(".filter-btn").forEach(btn => {
-  const f = btn.dataset.filter;
-  const isActive = state.buckets.has(f);
-  btn.style.opacity = isActive ? "1" : "0.4";
-  btn.addEventListener("click", () => {
-    if (state.buckets.has(f)) state.buckets.delete(f);
-    else state.buckets.add(f);
-    btn.style.opacity = state.buckets.has(f) ? "1" : "0.4";
-    renderTracker();
-  });
-});
-
-document.getElementById("movers-only").addEventListener("change", e => {
-  state.moversOnly = e.target.checked;
-  renderTracker();
-});
-
-document.querySelectorAll("th[data-sort]").forEach(th => {
-  th.style.cursor = "pointer";
-  th.addEventListener("click", () => {
-    const col = th.dataset.sort;
-    if (state.sort === col) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
-    else { state.sort = col; state.sortDir = (col === "title") ? "asc" : (col === "delta" || col === "position" || col === "prev_position") ? "asc" : "desc"; }
-    renderTracker();
-  });
-});
-
-// ─── Tabs ───────────────────────────────────────────────────────────────
-document.querySelectorAll(".tab").forEach(t => {
-  t.addEventListener("click", () => switchTab(t.dataset.tab));
-});
-
-function switchTab(name) {
-  document.querySelectorAll(".tab").forEach(t => {
-    t.classList.toggle("tab-active", t.dataset.tab === name);
-    t.classList.toggle("tab-inactive", t.dataset.tab !== name);
-  });
-  ["overview", "tracker", "movers", "ctr"].forEach(p => {
-    document.getElementById(`panel-${p}`).classList.toggle("hidden", p !== name);
-  });
-  if (name === "overview") renderOverview();
-  if (name === "movers") renderMovers();
-  if (name === "ctr") renderCtr();
-}
-
 // ─── Overview ───────────────────────────────────────────────────────────
 function renderOverview() {
-  const total = RANKINGS.length;
-  const p1 = RANKINGS.filter(r => r.bucket === "page1").length;
-  const p2 = RANKINGS.filter(r => r.bucket === "page2").length;
-  const p3 = RANKINGS.filter(r => r.bucket === "page3+").length;
-  const gainers = RANKINGS.filter(r => r.delta !== null && r.delta <= -5).length;
-  const droppers = RANKINGS.filter(r => r.delta !== null && r.delta >= 5).length;
-  const fellOff = RANKINGS.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data").length;
-
+  const ranks = computedRanks();
+  const total = ranks.length;
+  const p1 = ranks.filter(r => r.bucket === "page1").length;
+  const p2 = ranks.filter(r => r.bucket === "page2").length;
+  const p3 = ranks.filter(r => r.bucket === "page3+").length;
+  const gainers = ranks.filter(r => r.delta !== null && r.delta <= -5).length;
+  const droppers = ranks.filter(r => r.delta !== null && r.delta >= 5).length;
+  const fellOff = ranks.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data").length;
   const kpi = (label, value, color = "slate") => `
     <div class="bg-white rounded-lg border border-slate-200 p-4">
       <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
       <div class="text-2xl font-semibold mt-1 text-${color}-600">${value}</div>
     </div>`;
-
   document.getElementById("kpi-grid").innerHTML =
-    kpi("Total", total) +
-    kpi("Page 1", p1, "green") +
-    kpi("Page 2", p2, "amber") +
-    kpi("Page 3+", p3, "red") +
-    kpi("Gainers", gainers, "green") +
-    kpi("Droppers", droppers, "red") +
-    kpi("Fell off P1", fellOff, "red");
+    kpi("Total", total) + kpi("Page 1", p1, "green") + kpi("Page 2", p2, "amber") +
+    kpi("Page 3+", p3, "red") + kpi("Gainers", gainers, "green") +
+    kpi("Droppers", droppers, "red") + kpi("Fell off P1", fellOff, "red");
 
   const miniRow = r => `
     <div class="flex justify-between items-baseline py-1.5 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-1" onclick="openModal('${r.slug}')">
       <div class="truncate pr-3">${r.title}</div>
       <div class="font-mono text-xs whitespace-nowrap">${deltaCell(r.delta)} <span class="text-slate-400">(${r.position?.toFixed(1) ?? "—"})</span></div>
     </div>`;
-
-  const sortedByDelta = RANKINGS.filter(r => r.delta !== null);
-  const gainersList = sortedByDelta.slice().sort((a, b) => a.delta - b.delta).slice(0, 8);
-  const droppersList = sortedByDelta.slice().sort((a, b) => b.delta - a.delta).slice(0, 8);
-  document.getElementById("overview-gainers").innerHTML = gainersList.map(miniRow).join("");
-  document.getElementById("overview-droppers").innerHTML = droppersList.map(miniRow).join("");
+  const sortedByDelta = ranks.filter(r => r.delta !== null);
+  document.getElementById("overview-gainers").innerHTML  = sortedByDelta.slice().sort((a, b) => a.delta - b.delta).slice(0, 8).map(miniRow).join("");
+  document.getElementById("overview-droppers").innerHTML = sortedByDelta.slice().sort((a, b) => b.delta - a.delta).slice(0, 8).map(miniRow).join("");
 }
 
 // ─── Movers ─────────────────────────────────────────────────────────────
 function renderMovers() {
-  const fell = RANKINGS.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data")
-    .sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0));
-  const rising = RANKINGS.filter(r => r.delta !== null && r.delta <= -5)
-    .sort((a, b) => a.delta - b.delta);
-  const bleeding = RANKINGS.filter(r => r.delta !== null && r.delta >= 5 && !(r.prev_bucket === "page1" && r.bucket !== "page1"))
-    .sort((a, b) => b.delta - a.delta);
-
+  const ranks = computedRanks();
+  const fell     = ranks.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data").sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0));
+  const rising   = ranks.filter(r => r.delta !== null && r.delta <= -5).sort((a, b) => a.delta - b.delta);
+  const bleeding = ranks.filter(r => r.delta !== null && r.delta >= 5 && !(r.prev_bucket === "page1" && r.bucket !== "page1")).sort((a, b) => b.delta - a.delta);
   document.getElementById("fell-count").textContent = `(${fell.length})`;
-
   const row = r => `
     <div class="flex items-baseline gap-3 py-2 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
       <div class="flex-1 min-w-0">
@@ -397,23 +456,20 @@ function renderMovers() {
         ${deltaCell(r.delta)}
       </div>
     </div>`;
-
-  document.getElementById("movers-fell").innerHTML = fell.length ? fell.map(row).join("") : `<div class="text-slate-400 italic py-4">None — nice.</div>`;
-  document.getElementById("movers-rising").innerHTML = rising.length ? rising.map(row).join("") : `<div class="text-slate-400 italic py-4">No risers ≥5 positions.</div>`;
+  document.getElementById("movers-fell").innerHTML     = fell.length     ? fell.map(row).join("")     : `<div class="text-slate-400 italic py-4">None — nice.</div>`;
+  document.getElementById("movers-rising").innerHTML   = rising.length   ? rising.map(row).join("")   : `<div class="text-slate-400 italic py-4">No risers ≥5 positions.</div>`;
   document.getElementById("movers-bleeding").innerHTML = bleeding.length ? bleeding.map(row).join("") : `<div class="text-slate-400 italic py-4">No droppers ≥5 positions.</div>`;
 }
 
 // ─── CTR Fixes ──────────────────────────────────────────────────────────
 function renderCtr() {
-  const candidates = RANKINGS.filter(r =>
-    r.position !== null && r.position <= 10 && r.ctr < 0.01 && r.impressions >= 1000
-  ).sort((a, b) => b.impressions - a.impressions);
-
+  const ranks = computedRanks();
+  const candidates = ranks.filter(r => r.position !== null && r.position <= 10 && r.ctr < 0.01 && r.impressions >= 1000)
+    .sort((a, b) => b.impressions - a.impressions);
   if (candidates.length === 0) {
-    document.getElementById("ctr-list").innerHTML = `<div class="text-slate-400 italic py-4">No candidates — your page 1 CTRs are healthy.</div>`;
+    document.getElementById("ctr-list").innerHTML = `<div class="text-slate-400 italic py-4">No candidates — your page 1 CTRs are healthy in this window.</div>`;
     return;
   }
-
   document.getElementById("ctr-list").innerHTML = candidates.map(r => `
     <div class="flex items-baseline gap-4 py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
       <div class="flex-1 min-w-0">
@@ -427,53 +483,246 @@ function renderCtr() {
 }
 
 // ─── Modal ──────────────────────────────────────────────────────────────
+function lineChart(history, metric, w = 600, h = 140) {
+  const points = history.filter(h => h[metric] !== null && h[metric] !== undefined && !(metric === "p" && h.i === 0));
+  if (points.length < 2) return `<div class="text-slate-400 italic text-xs py-6 text-center">Not enough data for a chart.</div>`;
+  const values = points.map(h => h[metric]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(max - min, 1);
+  const padX = 50, padY = 20;
+  const innerW = w - padX - 10, innerH = h - padY * 2;
+  const stepX = innerW / Math.max(points.length - 1, 1);
+  const isPosition = metric === "p"; // position: lower=better, invert visually
+  const yScale = v => {
+    const t = (v - min) / range;
+    return isPosition ? padY + t * innerH : padY + (1 - t) * innerH;
+  };
+  const xScale = i => padX + i * stepX;
+  const pts = points.map((p, i) => `${xScale(i).toFixed(1)},${yScale(p[metric]).toFixed(1)}`).join(" ");
+  // Y-axis labels (top and bottom)
+  const labelTop = isPosition ? min : max;
+  const labelBot = isPosition ? max : min;
+  const labelFmt = v => metric === "ctr" ? (v * 100).toFixed(1) + "%" : (typeof v === "number" && v >= 1000 ? Math.round(v).toLocaleString() : (typeof v === "number" ? v.toFixed(1) : v));
+  // X-axis: first/middle/last labels
+  const xLabels = [
+    { i: 0, txt: points[0].w },
+    { i: Math.floor(points.length / 2), txt: points[Math.floor(points.length / 2)].w },
+    { i: points.length - 1, txt: points[points.length - 1].w },
+  ];
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="max-width:${w}px;display:block">
+    <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h - padY}" stroke="#e2e8f0"/>
+    <line x1="${padX}" y1="${h - padY}" x2="${w - 10}" y2="${h - padY}" stroke="#e2e8f0"/>
+    <text x="${padX - 6}" y="${padY + 4}" text-anchor="end" font-size="10" fill="#64748b">${labelFmt(labelTop)}</text>
+    <text x="${padX - 6}" y="${h - padY + 4}" text-anchor="end" font-size="10" fill="#64748b">${labelFmt(labelBot)}</text>
+    <polyline fill="none" stroke="#0f172a" stroke-width="1.5" points="${pts}"/>
+    ${points.map((p, i) => `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(p[metric]).toFixed(1)}" r="2" fill="#0f172a"/>`).join("")}
+    ${xLabels.map(l => `<text x="${xScale(l.i)}" y="${h - 4}" text-anchor="middle" font-size="9" fill="#94a3b8">${l.txt}</text>`).join("")}
+  </svg>`;
+}
+
 window.openModal = function(slug) {
+  state.modalSlug = slug;
   const r = RANKINGS.find(x => x.slug === slug);
   if (!r) return;
   document.getElementById("modal-title").textContent = r.title;
   const link = document.getElementById("modal-link");
-  link.href = r.url;
-  link.textContent = r.url;
+  link.href = r.url; link.textContent = r.url;
 
+  // Stats for the SELECTED window
+  const cur = currentWeeks(), pri = priorWeeks();
+  const c = aggregate(r.history, cur);
+  const p = aggregate(r.history, pri);
+  const delta = (c.position !== null && p.position !== null) ? +(c.position - p.position).toFixed(2) : null;
   const stat = (label, value) => `
     <div class="bg-slate-50 rounded p-3">
-      <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
-      <div class="font-mono text-lg mt-0.5">${value}</div>
+      <div class="text-[10px] text-slate-500 uppercase tracking-wider">${label}</div>
+      <div class="font-mono text-base mt-0.5">${value}</div>
     </div>`;
-
   document.getElementById("modal-stats").innerHTML =
-    stat("Position", r.position !== null ? r.position.toFixed(1) : "—") +
-    stat("Δ vs prev", deltaCell(r.delta)) +
-    stat("Impressions", fmt(r.impressions)) +
-    stat("Clicks · CTR", `${fmt(r.clicks)} · ${pct(r.ctr)}`);
+    stat("Position", c.position !== null ? c.position.toFixed(1) : "—") +
+    stat("Δ vs prior", deltaCell(delta)) +
+    stat("Impressions", fmt(c.impressions)) +
+    stat("Clicks · CTR", `${fmt(c.clicks)} · ${pct(c.ctr)}`);
 
-  // Big sparkline
-  document.getElementById("modal-chart").innerHTML = sparkline(r.history, 540, 80);
+  renderModalChart();
 
-  // History table
+  // Full history table (latest first)
   const hist = (r.history || []).slice().reverse();
   document.getElementById("modal-history").innerHTML = hist.length ? hist.map(h => `
-    <tr><td class="py-1 font-mono text-slate-500">${h.w}</td><td class="py-1 text-right font-mono">${h.p !== null ? h.p.toFixed(1) : "—"}</td></tr>
-  `).join("") : `<tr><td colspan="2" class="py-4 text-center text-slate-400 italic">no history</td></tr>`;
+    <tr><td class="py-1 font-mono text-slate-500">${h.w}</td>
+        <td class="py-1 text-right font-mono">${h.p !== null ? h.p.toFixed(1) : "—"}</td>
+        <td class="py-1 text-right font-mono">${fmt(h.i)}</td>
+        <td class="py-1 text-right font-mono">${fmt(h.c)}</td>
+        <td class="py-1 text-right font-mono">${pct(h.ctr)}</td></tr>
+  `).join("") : `<tr><td colspan="5" class="py-4 text-center text-slate-400 italic">no history</td></tr>`;
 
   document.getElementById("modal").classList.remove("hidden");
   document.getElementById("modal").classList.add("flex");
 };
 
+function renderModalChart() {
+  if (!state.modalSlug) return;
+  const r = RANKINGS.find(x => x.slug === state.modalSlug);
+  document.getElementById("modal-chart").innerHTML = lineChart(r.history, state.modalMetric);
+  document.querySelectorAll(".metric-btn").forEach(b => {
+    b.classList.toggle("seg-btn-active", b.dataset.metric === state.modalMetric);
+  });
+}
+
 window.closeModal = function() {
   document.getElementById("modal").classList.add("hidden");
   document.getElementById("modal").classList.remove("flex");
+  state.modalSlug = null;
 };
 
 document.getElementById("modal").addEventListener("click", e => {
   if (e.target.id === "modal") closeModal();
 });
-
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeModal();
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.querySelectorAll(".metric-btn").forEach(b => {
+  b.addEventListener("click", () => { state.modalMetric = b.dataset.metric; renderModalChart(); });
 });
 
-// ─── Initial render ─────────────────────────────────────────────────────
+// ─── Tabs ───────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach(t => {
+    t.classList.toggle("tab-active", t.dataset.tab === name);
+    t.classList.toggle("tab-inactive", t.dataset.tab !== name);
+  });
+  ["overview", "tracker", "movers", "ctr"].forEach(p => {
+    document.getElementById(`panel-${p}`).classList.toggle("hidden", p !== name);
+  });
+  if (name === "overview") renderOverview();
+  if (name === "movers") renderMovers();
+  if (name === "ctr") renderCtr();
+}
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
+
+// ─── Window selector ────────────────────────────────────────────────────
+function setActiveWindow() {
+  document.querySelectorAll(".window-btn").forEach(b => {
+    const v = b.dataset.window === "custom" ? "custom" : Number(b.dataset.window);
+    b.classList.toggle("seg-btn-active", v === state.window);
+  });
+  document.getElementById("custom-range").classList.toggle("hidden", state.window !== "custom");
+}
+
+document.querySelectorAll(".window-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    const v = b.dataset.window === "custom" ? "custom" : Number(b.dataset.window);
+    state.window = v;
+    setActiveWindow();
+    refreshAll();
+  });
+});
+
+// Custom range dropdowns
+function initCustomRange() {
+  const startSel = document.getElementById("custom-start");
+  const endSel = document.getElementById("custom-end");
+  const opts = ALL_WEEKS.map(w => `<option value="${w}">${w}</option>`).join("");
+  startSel.innerHTML = opts;
+  endSel.innerHTML = opts;
+  // Sensible defaults: middle of range to most recent
+  const mid = Math.floor(ALL_WEEKS.length / 2);
+  startSel.value = ALL_WEEKS[mid];
+  endSel.value = ALL_WEEKS[ALL_WEEKS.length - 1];
+  state.customStart = startSel.value;
+  state.customEnd = endSel.value;
+  startSel.addEventListener("change", () => { state.customStart = startSel.value; refreshAll(); });
+  endSel.addEventListener("change",   () => { state.customEnd = endSel.value;     refreshAll(); });
+}
+
+// ─── Filter wiring ──────────────────────────────────────────────────────
+document.getElementById("search-box").addEventListener("input", e => { state.search = e.target.value; renderTracker(); });
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  const f = btn.dataset.filter;
+  btn.style.opacity = state.buckets.has(f) ? "1" : "0.4";
+  btn.addEventListener("click", () => {
+    if (state.buckets.has(f)) state.buckets.delete(f); else state.buckets.add(f);
+    btn.style.opacity = state.buckets.has(f) ? "1" : "0.4";
+    renderTracker();
+  });
+});
+
+document.getElementById("movers-only").addEventListener("change", e => { state.moversOnly = e.target.checked; renderTracker(); });
+
+document.querySelectorAll("th[data-sort]").forEach(th => {
+  th.style.cursor = "pointer";
+  th.addEventListener("click", () => {
+    const col = th.dataset.sort;
+    if (state.sort === col) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+    else state.sort = col;
+    renderTracker();
+  });
+});
+
+// ─── CSV downloads ──────────────────────────────────────────────────────
+function csvEscape(v) {
+  if (v === null || v === undefined) return "";
+  const s = String(v);
+  return /[,"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function downloadCSV(filename, header, rows) {
+  const csv = [header, ...rows].map(r => r.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+function windowLabel() {
+  const cur = currentWeeks();
+  if (cur.length === 0) return "empty";
+  return `${cur[0]}_to_${cur[cur.length-1]}`;
+}
+document.getElementById("dl-summary").addEventListener("click", () => {
+  const ranks = applyFilters(computedRanks());
+  const header = ["Title", "Slug", "URL", "Position", "Prev Position", "Delta", "Impressions", "Clicks", "CTR", "Bucket", "Prev Bucket"];
+  const rows = ranks.map(r => [
+    r.title, r.slug, r.url,
+    r.position !== null ? r.position.toFixed(2) : "",
+    r.prev_position !== null ? r.prev_position.toFixed(2) : "",
+    r.delta !== null ? r.delta.toFixed(2) : "",
+    r.impressions, r.clicks,
+    (r.ctr * 100).toFixed(2) + "%",
+    r.bucket, r.prev_bucket,
+  ]);
+  downloadCSV(`blog-rank-summary_${windowLabel()}.csv`, header, rows);
+});
+document.getElementById("dl-weekly").addEventListener("click", () => {
+  const header = ["Week", "Slug", "Title", "Position", "Impressions", "Clicks", "CTR"];
+  const rows = [];
+  RANKINGS.forEach(r => {
+    r.history.forEach(h => {
+      rows.push([
+        h.w, r.slug, r.title,
+        h.p !== null ? h.p.toFixed(2) : "",
+        h.i, h.c,
+        (h.ctr * 100).toFixed(2) + "%",
+      ]);
+    });
+  });
+  downloadCSV(`blog-rank-weekly_${META.first_week}_to_${META.last_week}.csv`, header, rows);
+});
+
+// ─── Refresh dispatcher ─────────────────────────────────────────────────
+function refreshAll() {
+  updatePeriodLine();
+  renderTracker();
+  // Re-render whichever non-default tab is visible
+  if (!document.getElementById("panel-overview").classList.contains("hidden")) renderOverview();
+  if (!document.getElementById("panel-movers").classList.contains("hidden")) renderMovers();
+  if (!document.getElementById("panel-ctr").classList.contains("hidden")) renderCtr();
+  if (state.modalSlug) openModal(state.modalSlug);
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────
+initCustomRange();
+setActiveWindow();
+updatePeriodLine();
 renderTracker();
 </script>
 </body>

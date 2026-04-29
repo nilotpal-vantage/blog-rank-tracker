@@ -2,15 +2,15 @@
 """
 update-data.py — Refresh blog rank tracker data from Google Search Console.
 
-Reads posts from _posts.json, queries GSC for:
-  - Current period (last 28d, ending 1d ago for finalized data)
-  - Previous period (28d before that)
-  - Weekly history (last 12 weeks, grouped by week+page)
+Pulls 52 weeks of weekly per-page metrics (position, impressions, clicks, CTR)
+for posts authored by Nilotpal in the local Astro repo.
+
+The dashboard computes any-window comparisons in JS from this history,
+so this script doesn't pre-compute current/previous deltas.
 
 Writes:
-  - data.js     (post metadata: title, slug, url, tags, date, updated)
-  - rankings.js (GSC metrics: position, prev_position, delta, impressions,
-                 clicks, ctr, bucket, history[])
+  - data.js     (metadata: history range, generated_at, post_count)
+  - rankings.js (per-post: title, slug, url, tags, history[{w,p,i,c,ctr}])
 
 Usage:
   python3 update-data.py
@@ -37,6 +37,7 @@ SITE_URL = "https://www.vantagecircle.com/"
 BLOG_PREFIX = "https://www.vantagecircle.com/en/blog/"
 POSTS_DIR = HERE.parent.parent / "vantagecircle-astro" / "content" / "en" / "posts"
 AUTHOR_MATCH = "nilotpal"  # case-insensitive substring match in author field
+HISTORY_DAYS = 364  # 52 weeks
 
 POSTS_JSON = HERE / "_posts.json"
 DATA_JS = HERE / "data.js"
@@ -76,6 +77,7 @@ def extract_posts() -> list[dict]:
         })
     return posts
 
+
 # ─── Auth ──────────────────────────────────────────────────────────────────
 def get_credentials() -> Credentials:
     conn = sqlite3.connect(str(DB_PATH))
@@ -113,62 +115,41 @@ def gsc():
 
 # ─── Query helpers ─────────────────────────────────────────────────────────
 def build_slug_regex(slugs: list[str]) -> str:
-    # Anchor on /en/blog/<slug>/  to avoid accidental partial matches
     parts = "|".join(s.replace(".", r"\.") for s in slugs)
     return f"/en/blog/({parts})/?$"
 
 
-def query_pages(service, start: str, end: str, regex: str) -> list[dict]:
-    body = {
-        "startDate": start,
-        "endDate": end,
-        "dimensions": ["page"],
-        "dimensionFilterGroups": [
-            {
-                "filters": [
-                    {"dimension": "page", "operator": "includingRegex", "expression": regex}
-                ]
-            }
-        ],
-        "rowLimit": 25000,
-        "dataState": "final",
-    }
-    resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute()
-    return resp.get("rows", [])
+PAGE_LIMIT = 25000  # GSC API max
 
 
-def query_weekly(service, start: str, end: str, regex: str) -> list[dict]:
-    body = {
-        "startDate": start,
-        "endDate": end,
-        "dimensions": ["date", "page"],
-        "dimensionFilterGroups": [
-            {
-                "filters": [
-                    {"dimension": "page", "operator": "includingRegex", "expression": regex}
-                ]
-            }
-        ],
-        "rowLimit": 25000,
-        "dataState": "final",
-    }
-    resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute()
-    return resp.get("rows", [])
+def query_daily_paginated(service, start: str, end: str, regex: str) -> list[dict]:
+    """Pull date+page rows, paginating to handle >25k results."""
+    rows = []
+    start_row = 0
+    while True:
+        body = {
+            "startDate": start,
+            "endDate": end,
+            "dimensions": ["date", "page"],
+            "dimensionFilterGroups": [
+                {"filters": [{"dimension": "page", "operator": "includingRegex", "expression": regex}]}
+            ],
+            "rowLimit": PAGE_LIMIT,
+            "startRow": start_row,
+            "dataState": "final",
+        }
+        resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute()
+        chunk = resp.get("rows", [])
+        rows.extend(chunk)
+        print(f"  page {start_row // PAGE_LIMIT + 1}: +{len(chunk)} rows (total {len(rows)})")
+        if len(chunk) < PAGE_LIMIT:
+            break
+        start_row += PAGE_LIMIT
+    return rows
 
 
-# ─── Build data ────────────────────────────────────────────────────────────
 def slug_from_url(url: str) -> str:
-    # Strip prefix and trailing slash
-    s = url.replace(BLOG_PREFIX, "").rstrip("/")
-    return s
-
-
-def bucket(pos: float) -> str:
-    if pos <= 10:
-        return "page1"
-    if pos <= 20:
-        return "page2"
-    return "page3+"
+    return url.replace(BLOG_PREFIX, "").rstrip("/")
 
 
 def main():
@@ -179,59 +160,21 @@ def main():
     print(f"  {len(slugs)} posts authored by '{AUTHOR_MATCH}'")
 
     today = datetime.utcnow().date()
-    # GSC has ~2-day lag for finalized data; end period 1 day ago
-    cur_end = today - timedelta(days=1)
-    cur_start = cur_end - timedelta(days=27)  # 28-day window inclusive
-    prev_end = cur_start - timedelta(days=1)
-    prev_start = prev_end - timedelta(days=27)
-    hist_start = cur_end - timedelta(days=83)  # 12 weeks = 84 days
+    end = today - timedelta(days=1)  # GSC has ~2-day lag for finalized data
+    start = end - timedelta(days=HISTORY_DAYS - 1)
 
-    print(f"Current: {cur_start} → {cur_end}")
-    print(f"Previous: {prev_start} → {prev_end}")
-    print(f"History: {hist_start} → {cur_end}")
+    print(f"History window: {start} → {end} ({HISTORY_DAYS} days)")
 
     regex = build_slug_regex(slugs)
     svc = gsc()
 
-    print("Querying current period…")
-    cur_rows = query_pages(svc, cur_start.isoformat(), cur_end.isoformat(), regex)
-    print(f"  {len(cur_rows)} rows")
+    print("Querying daily-by-page (paginated)…")
+    rows = query_daily_paginated(svc, start.isoformat(), end.isoformat(), regex)
 
-    print("Querying previous period…")
-    prev_rows = query_pages(svc, prev_start.isoformat(), prev_end.isoformat(), regex)
-    print(f"  {len(prev_rows)} rows")
-
-    print("Querying weekly history…")
-    hist_rows = query_weekly(svc, hist_start.isoformat(), cur_end.isoformat(), regex)
-    print(f"  {len(hist_rows)} rows")
-
-    # ─── Index by slug ───
-    cur_by_slug = {}
-    for r in cur_rows:
-        url = r["keys"][0]
-        s = slug_from_url(url)
-        cur_by_slug[s] = {
-            "position": round(r["position"], 2),
-            "impressions": r["impressions"],
-            "clicks": r["clicks"],
-            "ctr": round(r["ctr"], 4),
-        }
-
-    prev_by_slug = {}
-    for r in prev_rows:
-        url = r["keys"][0]
-        s = slug_from_url(url)
-        prev_by_slug[s] = {
-            "position": round(r["position"], 2),
-            "impressions": r["impressions"],
-            "clicks": r["clicks"],
-            "ctr": round(r["ctr"], 4),
-        }
-
-    # Roll daily history into weekly buckets per slug
-    # Week key: ISO year-week, e.g. "2026-W17"
-    hist_by_slug = {}
-    for r in hist_rows:
+    # ─── Roll daily into ISO weeks per slug ─────────────────────────────
+    # Each weekly bucket: impression-weighted position avg, summed impressions/clicks
+    hist_by_slug: dict[str, dict[str, dict]] = {}
+    for r in rows:
         date_str, url = r["keys"]
         s = slug_from_url(url)
         d = datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -240,31 +183,29 @@ def main():
         if s not in hist_by_slug:
             hist_by_slug[s] = {}
         if wk not in hist_by_slug[s]:
-            hist_by_slug[s][wk] = {"pos_sum": 0.0, "imp_sum": 0, "n": 0}
-        # Weighted by impressions for accurate avg position
+            hist_by_slug[s][wk] = {"pos_imp_sum": 0.0, "imp": 0, "clicks": 0}
         b = hist_by_slug[s][wk]
-        b["pos_sum"] += r["position"] * r["impressions"]
-        b["imp_sum"] += r["impressions"]
-        b["n"] += 1
+        b["pos_imp_sum"] += r["position"] * r["impressions"]
+        b["imp"] += r["impressions"]
+        b["clicks"] += r["clicks"]
 
-    # ─── Combine into final records ───
+    # ─── Build records ─────────────────────────────────────────────────
     records = []
     for p in posts:
         s = p["slug"]
-        cur = cur_by_slug.get(s, {})
-        prev = prev_by_slug.get(s, {})
-        cur_pos = cur.get("position")
-        prev_pos = prev.get("position")
-        delta = None
-        if cur_pos is not None and prev_pos is not None:
-            # Negative delta = improvement (position dropped from 15 to 8 = -7 = good)
-            delta = round(cur_pos - prev_pos, 2)
         history = []
         if s in hist_by_slug:
             for wk in sorted(hist_by_slug[s].keys()):
                 b = hist_by_slug[s][wk]
-                avg = b["pos_sum"] / b["imp_sum"] if b["imp_sum"] > 0 else None
-                history.append({"w": wk, "p": round(avg, 2) if avg else None})
+                pos = b["pos_imp_sum"] / b["imp"] if b["imp"] > 0 else None
+                ctr = b["clicks"] / b["imp"] if b["imp"] > 0 else 0
+                history.append({
+                    "w": wk,
+                    "p": round(pos, 2) if pos is not None else None,
+                    "i": b["imp"],
+                    "c": b["clicks"],
+                    "ctr": round(ctr, 4),
+                })
         records.append({
             "title": p["title"],
             "slug": s,
@@ -272,24 +213,18 @@ def main():
             "date": p["date"],
             "updated": p["updated"],
             "tags": p["tags"],
-            "position": cur_pos,
-            "prev_position": prev_pos,
-            "delta": delta,
-            "impressions": cur.get("impressions", 0),
-            "clicks": cur.get("clicks", 0),
-            "ctr": cur.get("ctr", 0.0),
-            "bucket": bucket(cur_pos) if cur_pos is not None else "no-data",
-            "prev_bucket": bucket(prev_pos) if prev_pos is not None else "no-data",
             "history": history,
         })
 
-    # ─── Write JS files ───
+    # ─── Write JS files ────────────────────────────────────────────────
+    all_weeks = sorted({h["w"] for r in records for h in r["history"]})
     meta = {
-        "current_start": cur_start.isoformat(),
-        "current_end": cur_end.isoformat(),
-        "previous_start": prev_start.isoformat(),
-        "previous_end": prev_end.isoformat(),
-        "history_start": hist_start.isoformat(),
+        "history_start": start.isoformat(),
+        "history_end": end.isoformat(),
+        "history_days": HISTORY_DAYS,
+        "first_week": all_weeks[0] if all_weeks else None,
+        "last_week": all_weeks[-1] if all_weeks else None,
+        "all_weeks": all_weeks,
         "generated_at": datetime.utcnow().isoformat() + "Z",
         "post_count": len(records),
     }
@@ -298,31 +233,18 @@ def main():
         "// Auto-generated. Do not edit.\n"
         f"const META = {json.dumps(meta, indent=2)};\n"
     )
-
     RANKINGS_JS.write_text(
         "// Auto-generated. Do not edit.\n"
         f"const RANKINGS = {json.dumps(records, indent=2, ensure_ascii=False)};\n"
     )
 
-    # Summary
-    matched = sum(1 for r in records if r["position"] is not None)
-    p1 = sum(1 for r in records if r["bucket"] == "page1")
-    p2 = sum(1 for r in records if r["bucket"] == "page2")
-    p3 = sum(1 for r in records if r["bucket"] == "page3+")
-    nodata = sum(1 for r in records if r["bucket"] == "no-data")
-    fell_off = sum(
-        1 for r in records
-        if r["prev_bucket"] == "page1" and r["bucket"] in ("page2", "page3+")
-    )
+    # ─── Summary ───────────────────────────────────────────────────────
+    matched = sum(1 for r in records if r["history"])
     print()
-    print(f"Matched in GSC : {matched} / {len(records)}")
-    print(f"  page1        : {p1}")
-    print(f"  page2        : {p2}")
-    print(f"  page3+       : {p3}")
-    print(f"  no-data      : {nodata}")
-    print(f"Fell off page1 : {fell_off}")
-    print(f"Wrote {DATA_JS.name} ({DATA_JS.stat().st_size} bytes)")
-    print(f"Wrote {RANKINGS_JS.name} ({RANKINGS_JS.stat().st_size} bytes)")
+    print(f"Posts with GSC data : {matched} / {len(records)}")
+    print(f"Weeks covered       : {len(all_weeks)} ({all_weeks[0] if all_weeks else '—'} → {all_weeks[-1] if all_weeks else '—'})")
+    print(f"Wrote {DATA_JS.name} ({DATA_JS.stat().st_size:,} bytes)")
+    print(f"Wrote {RANKINGS_JS.name} ({RANKINGS_JS.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":
