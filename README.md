@@ -1,4 +1,4 @@
-# Blog Rank Tracker
+# Nilotpal's Blog Rank Tracker
 
 A static dashboard that tracks SERP positions of 73 Vantage Circle blog posts authored by Nilotpal, using Google Search Console data.
 
