@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Blog Rank Tracker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .tab-active { color: #0f172a; border-bottom-color: #0f172a; }
+  .tab-inactive { color: #64748b; border-bottom-color: transparent; }
+  .bucket-page1 { background: #dcfce7; color: #166534; }
+  .bucket-page2 { background: #fef3c7; color: #92400e; }
+  .bucket-page3 { background: #fee2e2; color: #991b1b; }
+  .bucket-nodata { background: #f1f5f9; color: #64748b; }
+  .delta-up { color: #16a34a; }   /* improved (lower position number) */
+  .delta-down { color: #dc2626; } /* worsened */
+  .delta-flat { color: #94a3b8; }
+  table tbody tr { cursor: pointer; }
+  table tbody tr:hover { background: #f8fafc; }
+  .sparkline { display: inline-block; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-6 py-5">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight">Blog Rank Tracker</h1>
+        <p id="meta-line" class="text-sm text-slate-500 mt-1">Loading…</p>
+      </div>
+      <div class="text-right text-xs text-slate-400">
+        <div id="period-line"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Tabs -->
+<nav class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-6 flex gap-6 text-sm font-medium">
+    <button data-tab="overview"  class="tab py-3 border-b-2 tab-inactive">Overview</button>
+    <button data-tab="tracker"   class="tab py-3 border-b-2 tab-active">Rank Tracker</button>
+    <button data-tab="movers"    class="tab py-3 border-b-2 tab-inactive">Movers</button>
+    <button data-tab="ctr"       class="tab py-3 border-b-2 tab-inactive">CTR Fixes</button>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-6 py-6">
+
+  <!-- ─── Overview ─── -->
+  <section id="panel-overview" class="hidden">
+    <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6"></div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-lg border border-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Gainers (28d)</h3>
+        <div id="overview-gainers" class="text-sm"></div>
+      </div>
+      <div class="bg-white rounded-lg border border-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Droppers (28d)</h3>
+        <div id="overview-droppers" class="text-sm"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Rank Tracker (default) ─── -->
+  <section id="panel-tracker">
+    <div class="bg-white rounded-lg border border-slate-200 mb-4 p-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <input id="search-box" type="search" placeholder="Search title or slug…"
+               class="px-3 py-2 border border-slate-300 rounded text-sm w-64 focus:outline-none focus:ring-2 focus:ring-slate-400">
+        <div class="flex gap-1 text-xs">
+          <button data-filter="page1"   class="filter-btn px-3 py-1.5 rounded border bucket-page1 border-green-300">Page 1</button>
+          <button data-filter="page2"   class="filter-btn px-3 py-1.5 rounded border bucket-page2 border-amber-300">Page 2</button>
+          <button data-filter="page3+"  class="filter-btn px-3 py-1.5 rounded border bucket-page3 border-red-300">Page 3+</button>
+          <button data-filter="no-data" class="filter-btn px-3 py-1.5 rounded border bucket-nodata border-slate-300">No data</button>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-slate-600">
+          <input id="movers-only" type="checkbox" class="rounded">
+          Movers only (|Δ| ≥ 5)
+        </label>
+        <div class="ml-auto text-sm text-slate-500"><span id="row-count">0</span> posts</div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-4 py-3 text-left font-medium" data-sort="title">Title</th>
+            <th class="px-3 py-3 text-right font-medium" data-sort="position">Pos</th>
+            <th class="px-3 py-3 text-right font-medium" data-sort="delta">Δ</th>
+            <th class="px-3 py-3 text-right font-medium" data-sort="prev_position">Prev</th>
+            <th class="px-3 py-3 text-right font-medium" data-sort="impressions">Impr</th>
+            <th class="px-3 py-3 text-right font-medium" data-sort="clicks">Clicks</th>
+            <th class="px-3 py-3 text-right font-medium" data-sort="ctr">CTR</th>
+            <th class="px-3 py-3 text-center font-medium">Bucket</th>
+            <th class="px-3 py-3 text-center font-medium">12w trend</th>
+          </tr>
+        </thead>
+        <tbody id="tracker-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── Movers ─── -->
+  <section id="panel-movers" class="hidden space-y-6">
+    <div class="bg-white rounded-lg border border-slate-200 p-5">
+      <h3 class="text-sm font-semibold text-slate-700 mb-3">Fell off Page 1 <span id="fell-count" class="text-slate-400 font-normal"></span></h3>
+      <div id="movers-fell" class="text-sm"></div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-lg border border-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Rising <span class="text-slate-400 font-normal">(Δ ≤ -5)</span></h3>
+        <div id="movers-rising" class="text-sm"></div>
+      </div>
+      <div class="bg-white rounded-lg border border-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Bleeding <span class="text-slate-400 font-normal">(Δ ≥ +5)</span></h3>
+        <div id="movers-bleeding" class="text-sm"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTR Fixes ─── -->
+  <section id="panel-ctr" class="hidden">
+    <div class="bg-white rounded-lg border border-slate-200 p-5">
+      <p class="text-sm text-slate-600 mb-4">
+        Posts ranking on <strong>page 1</strong> with <strong>CTR &lt; 1%</strong> and <strong>≥1k impressions</strong>.
+        These need title or meta description rewrites — not full content rewrites.
+      </p>
+      <div id="ctr-list" class="text-sm"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Detail modal -->
+<div id="modal" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-5 border-b border-slate-200 flex items-start justify-between">
+      <div class="flex-1 pr-4">
+        <h3 id="modal-title" class="font-semibold text-base"></h3>
+        <a id="modal-link" target="_blank" class="text-xs text-blue-600 hover:underline"></a>
+      </div>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+    </div>
+    <div class="p-5">
+      <div id="modal-stats" class="grid grid-cols-2 gap-3 mb-5"></div>
+      <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Position over last 12 weeks</h4>
+      <div id="modal-chart" class="mb-3"></div>
+      <table class="w-full text-xs">
+        <thead class="text-slate-500 border-b border-slate-200">
+          <tr><th class="text-left py-1.5 font-medium">Week</th><th class="text-right py-1.5 font-medium">Position</th></tr>
+        </thead>
+        <tbody id="modal-history"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="rankings.js"></script>
+<script>
+// ─── State ──────────────────────────────────────────────────────────────
+const state = {
+  search: "",
+  buckets: new Set(["page2", "page3+"]),  // default focus per user
+  moversOnly: false,
+  sort: "position",
+  sortDir: "asc",
+};
+
+// ─── Header / meta ──────────────────────────────────────────────────────
+const fmtDate = s => new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+document.getElementById("meta-line").textContent =
+  `${META.post_count} posts · last refreshed ${fmtDate(META.generated_at)}`;
+document.getElementById("period-line").innerHTML =
+  `<div>Current: ${fmtDate(META.current_start)} → ${fmtDate(META.current_end)}</div>` +
+  `<div>vs ${fmtDate(META.previous_start)} → ${fmtDate(META.previous_end)}</div>`;
+
+// ─── Helpers ────────────────────────────────────────────────────────────
+function bucketBadge(b) {
+  const map = {
+    "page1":   ["bucket-page1", "Page 1"],
+    "page2":   ["bucket-page2", "Page 2"],
+    "page3+":  ["bucket-page3", "Page 3+"],
+    "no-data": ["bucket-nodata", "No data"],
+  };
+  const [cls, label] = map[b] || ["bucket-nodata", "—"];
+  return `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}">${label}</span>`;
+}
+
+function deltaCell(d) {
+  if (d === null || d === undefined) return `<span class="delta-flat">—</span>`;
+  if (Math.abs(d) < 0.5) return `<span class="delta-flat">±0</span>`;
+  // Negative delta = lower position number = improvement (good)
+  if (d < 0) return `<span class="delta-up font-medium">▲ ${Math.abs(d).toFixed(1)}</span>`;
+  return `<span class="delta-down font-medium">▼ ${d.toFixed(1)}</span>`;
+}
+
+function fmt(n) {
+  if (n === null || n === undefined) return "—";
+  if (typeof n === "number" && n >= 1000) return n.toLocaleString();
+  return n;
+}
+
+function pct(n) {
+  if (!n) return "0.0%";
+  return (n * 100).toFixed(2) + "%";
+}
+
+function sparkline(history, w = 100, h = 28) {
+  if (!history || history.length === 0) return "";
+  const points = history.filter(h => h.p !== null);
+  if (points.length === 0) return `<span class="text-slate-300 text-xs">no data</span>`;
+  const positions = points.map(p => p.p);
+  const min = Math.min(...positions);
+  const max = Math.max(...positions);
+  const range = Math.max(max - min, 1);
+  // Position: lower = better, so we invert Y (higher in chart = lower position number = better)
+  const stepX = w / Math.max(points.length - 1, 1);
+  const pts = points.map((p, i) => {
+    const x = i * stepX;
+    const y = ((p.p - min) / range) * (h - 4) + 2;  // higher pos number = lower in chart
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const last = points[points.length - 1].p;
+  const first = points[0].p;
+  const color = last < first ? "#16a34a" : (last > first ? "#dc2626" : "#94a3b8");
+  return `<svg class="sparkline" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <polyline fill="none" stroke="${color}" stroke-width="1.5" points="${pts}"/>
+  </svg>`;
+}
+
+// ─── Tracker rendering ──────────────────────────────────────────────────
+function applyFilters(rows) {
+  let out = rows.slice();
+  if (state.search) {
+    const q = state.search.toLowerCase();
+    out = out.filter(r =>
+      r.title.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q));
+  }
+  if (state.buckets.size > 0 && state.buckets.size < 4) {
+    out = out.filter(r => state.buckets.has(r.bucket));
+  }
+  if (state.moversOnly) {
+    out = out.filter(r => r.delta !== null && Math.abs(r.delta) >= 5);
+  }
+  // Sort
+  const dir = state.sortDir === "asc" ? 1 : -1;
+  out.sort((a, b) => {
+    const av = a[state.sort], bv = b[state.sort];
+    if (av === null || av === undefined) return 1;
+    if (bv === null || bv === undefined) return -1;
+    if (typeof av === "string") return dir * av.localeCompare(bv);
+    return dir * (av - bv);
+  });
+  return out;
+}
+
+function renderTracker() {
+  const rows = applyFilters(RANKINGS);
+  document.getElementById("row-count").textContent = rows.length;
+  document.getElementById("tracker-body").innerHTML = rows.map(r => `
+    <tr data-slug="${r.slug}" class="border-b border-slate-100 last:border-b-0">
+      <td class="px-4 py-3 max-w-md">
+        <div class="font-medium text-slate-900 leading-snug">${r.title}</div>
+        <div class="text-xs text-slate-400 font-mono mt-0.5">${r.slug}</div>
+      </td>
+      <td class="px-3 py-3 text-right font-mono">${r.position !== null ? r.position.toFixed(1) : "—"}</td>
+      <td class="px-3 py-3 text-right font-mono">${deltaCell(r.delta)}</td>
+      <td class="px-3 py-3 text-right font-mono text-slate-500">${r.prev_position !== null ? r.prev_position.toFixed(1) : "—"}</td>
+      <td class="px-3 py-3 text-right font-mono">${fmt(r.impressions)}</td>
+      <td class="px-3 py-3 text-right font-mono">${fmt(r.clicks)}</td>
+      <td class="px-3 py-3 text-right font-mono">${pct(r.ctr)}</td>
+      <td class="px-3 py-3 text-center">${bucketBadge(r.bucket)}</td>
+      <td class="px-3 py-3 text-center">${sparkline(r.history)}</td>
+    </tr>
+  `).join("");
+
+  document.querySelectorAll("#tracker-body tr").forEach(tr => {
+    tr.addEventListener("click", () => openModal(tr.dataset.slug));
+  });
+}
+
+// ─── Filter wiring ──────────────────────────────────────────────────────
+document.getElementById("search-box").addEventListener("input", e => {
+  state.search = e.target.value;
+  renderTracker();
+});
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  const f = btn.dataset.filter;
+  const isActive = state.buckets.has(f);
+  btn.style.opacity = isActive ? "1" : "0.4";
+  btn.addEventListener("click", () => {
+    if (state.buckets.has(f)) state.buckets.delete(f);
+    else state.buckets.add(f);
+    btn.style.opacity = state.buckets.has(f) ? "1" : "0.4";
+    renderTracker();
+  });
+});
+
+document.getElementById("movers-only").addEventListener("change", e => {
+  state.moversOnly = e.target.checked;
+  renderTracker();
+});
+
+document.querySelectorAll("th[data-sort]").forEach(th => {
+  th.style.cursor = "pointer";
+  th.addEventListener("click", () => {
+    const col = th.dataset.sort;
+    if (state.sort === col) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+    else { state.sort = col; state.sortDir = (col === "title") ? "asc" : (col === "delta" || col === "position" || col === "prev_position") ? "asc" : "desc"; }
+    renderTracker();
+  });
+});
+
+// ─── Tabs ───────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => switchTab(t.dataset.tab));
+});
+
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach(t => {
+    t.classList.toggle("tab-active", t.dataset.tab === name);
+    t.classList.toggle("tab-inactive", t.dataset.tab !== name);
+  });
+  ["overview", "tracker", "movers", "ctr"].forEach(p => {
+    document.getElementById(`panel-${p}`).classList.toggle("hidden", p !== name);
+  });
+  if (name === "overview") renderOverview();
+  if (name === "movers") renderMovers();
+  if (name === "ctr") renderCtr();
+}
+
+// ─── Overview ───────────────────────────────────────────────────────────
+function renderOverview() {
+  const total = RANKINGS.length;
+  const p1 = RANKINGS.filter(r => r.bucket === "page1").length;
+  const p2 = RANKINGS.filter(r => r.bucket === "page2").length;
+  const p3 = RANKINGS.filter(r => r.bucket === "page3+").length;
+  const gainers = RANKINGS.filter(r => r.delta !== null && r.delta <= -5).length;
+  const droppers = RANKINGS.filter(r => r.delta !== null && r.delta >= 5).length;
+  const fellOff = RANKINGS.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data").length;
+
+  const kpi = (label, value, color = "slate") => `
+    <div class="bg-white rounded-lg border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
+      <div class="text-2xl font-semibold mt-1 text-${color}-600">${value}</div>
+    </div>`;
+
+  document.getElementById("kpi-grid").innerHTML =
+    kpi("Total", total) +
+    kpi("Page 1", p1, "green") +
+    kpi("Page 2", p2, "amber") +
+    kpi("Page 3+", p3, "red") +
+    kpi("Gainers", gainers, "green") +
+    kpi("Droppers", droppers, "red") +
+    kpi("Fell off P1", fellOff, "red");
+
+  const miniRow = r => `
+    <div class="flex justify-between items-baseline py-1.5 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-1" onclick="openModal('${r.slug}')">
+      <div class="truncate pr-3">${r.title}</div>
+      <div class="font-mono text-xs whitespace-nowrap">${deltaCell(r.delta)} <span class="text-slate-400">(${r.position?.toFixed(1) ?? "—"})</span></div>
+    </div>`;
+
+  const sortedByDelta = RANKINGS.filter(r => r.delta !== null);
+  const gainersList = sortedByDelta.slice().sort((a, b) => a.delta - b.delta).slice(0, 8);
+  const droppersList = sortedByDelta.slice().sort((a, b) => b.delta - a.delta).slice(0, 8);
+  document.getElementById("overview-gainers").innerHTML = gainersList.map(miniRow).join("");
+  document.getElementById("overview-droppers").innerHTML = droppersList.map(miniRow).join("");
+}
+
+// ─── Movers ─────────────────────────────────────────────────────────────
+function renderMovers() {
+  const fell = RANKINGS.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data")
+    .sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0));
+  const rising = RANKINGS.filter(r => r.delta !== null && r.delta <= -5)
+    .sort((a, b) => a.delta - b.delta);
+  const bleeding = RANKINGS.filter(r => r.delta !== null && r.delta >= 5 && !(r.prev_bucket === "page1" && r.bucket !== "page1"))
+    .sort((a, b) => b.delta - a.delta);
+
+  document.getElementById("fell-count").textContent = `(${fell.length})`;
+
+  const row = r => `
+    <div class="flex items-baseline gap-3 py-2 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-slate-900 truncate">${r.title}</div>
+        <div class="text-xs text-slate-400 font-mono">${r.slug}</div>
+      </div>
+      <div class="text-right font-mono text-xs whitespace-nowrap">
+        ${r.prev_position?.toFixed(1) ?? "—"} → <strong>${r.position?.toFixed(1) ?? "—"}</strong><br>
+        ${deltaCell(r.delta)}
+      </div>
+    </div>`;
+
+  document.getElementById("movers-fell").innerHTML = fell.length ? fell.map(row).join("") : `<div class="text-slate-400 italic py-4">None — nice.</div>`;
+  document.getElementById("movers-rising").innerHTML = rising.length ? rising.map(row).join("") : `<div class="text-slate-400 italic py-4">No risers ≥5 positions.</div>`;
+  document.getElementById("movers-bleeding").innerHTML = bleeding.length ? bleeding.map(row).join("") : `<div class="text-slate-400 italic py-4">No droppers ≥5 positions.</div>`;
+}
+
+// ─── CTR Fixes ──────────────────────────────────────────────────────────
+function renderCtr() {
+  const candidates = RANKINGS.filter(r =>
+    r.position !== null && r.position <= 10 && r.ctr < 0.01 && r.impressions >= 1000
+  ).sort((a, b) => b.impressions - a.impressions);
+
+  if (candidates.length === 0) {
+    document.getElementById("ctr-list").innerHTML = `<div class="text-slate-400 italic py-4">No candidates — your page 1 CTRs are healthy.</div>`;
+    return;
+  }
+
+  document.getElementById("ctr-list").innerHTML = candidates.map(r => `
+    <div class="flex items-baseline gap-4 py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-slate-900 truncate">${r.title}</div>
+        <div class="text-xs text-slate-400 font-mono">${r.slug}</div>
+      </div>
+      <div class="text-right font-mono text-xs whitespace-nowrap">
+        Pos <strong>${r.position.toFixed(1)}</strong> · ${fmt(r.impressions)} impr · CTR <strong class="delta-down">${pct(r.ctr)}</strong>
+      </div>
+    </div>`).join("");
+}
+
+// ─── Modal ──────────────────────────────────────────────────────────────
+window.openModal = function(slug) {
+  const r = RANKINGS.find(x => x.slug === slug);
+  if (!r) return;
+  document.getElementById("modal-title").textContent = r.title;
+  const link = document.getElementById("modal-link");
+  link.href = r.url;
+  link.textContent = r.url;
+
+  const stat = (label, value) => `
+    <div class="bg-slate-50 rounded p-3">
+      <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
+      <div class="font-mono text-lg mt-0.5">${value}</div>
+    </div>`;
+
+  document.getElementById("modal-stats").innerHTML =
+    stat("Position", r.position !== null ? r.position.toFixed(1) : "—") +
+    stat("Δ vs prev", deltaCell(r.delta)) +
+    stat("Impressions", fmt(r.impressions)) +
+    stat("Clicks · CTR", `${fmt(r.clicks)} · ${pct(r.ctr)}`);
+
+  // Big sparkline
+  document.getElementById("modal-chart").innerHTML = sparkline(r.history, 540, 80);
+
+  // History table
+  const hist = (r.history || []).slice().reverse();
+  document.getElementById("modal-history").innerHTML = hist.length ? hist.map(h => `
+    <tr><td class="py-1 font-mono text-slate-500">${h.w}</td><td class="py-1 text-right font-mono">${h.p !== null ? h.p.toFixed(1) : "—"}</td></tr>
+  `).join("") : `<tr><td colspan="2" class="py-4 text-center text-slate-400 italic">no history</td></tr>`;
+
+  document.getElementById("modal").classList.remove("hidden");
+  document.getElementById("modal").classList.add("flex");
+};
+
+window.closeModal = function() {
+  document.getElementById("modal").classList.add("hidden");
+  document.getElementById("modal").classList.remove("flex");
+};
+
+document.getElementById("modal").addEventListener("click", e => {
+  if (e.target.id === "modal") closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
+});
+
+// ─── Initial render ─────────────────────────────────────────────────────
+renderTracker();
+</script>
+</body>
+</html>
