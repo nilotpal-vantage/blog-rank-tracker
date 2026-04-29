@@ -12,15 +12,36 @@ A static dashboard that tracks SERP positions of 73 Vantage Circle blog posts au
 
 ## Refresh
 
+### Manual
+
 ```bash
 cd ~/KWID/projects/blog-rank-tracker
-python3 update-data.py
-git add data.js rankings.js && git commit -m "Refresh data" && git push
+./refresh.sh
 ```
 
-`update-data.py` reads frontmatter from `../../vantagecircle-astro/content/en/posts/` (filtered by author = `nilotpal`), pulls 52 weeks of weekly GSC data via the OAuth tokens in `../../gsc-mcp/gsc_tokens.db`, and regenerates `data.js` + `rankings.js`. Runs in ~10 seconds.
+`refresh.sh` runs `update-data.py`, commits, and pushes if anything changed. The Python script reads frontmatter from `../../vantagecircle-astro/content/en/posts/` (filtered by author = `nilotpal`), pulls 52 weeks of weekly GSC data via the OAuth tokens in `../../gsc-mcp/gsc_tokens.db`, and regenerates `data.js` + `rankings.js`. Runs in ~10 seconds.
 
 After push, GitHub Pages rebuilds in ~30 seconds. Hard-refresh the dashboard (Cmd+Shift+R) to bypass JS caching.
+
+### Automated (Mondays at 10:00 IST)
+
+Installed as a macOS launchd agent at `~/Library/LaunchAgents/com.nilotpal.blog-rank-tracker.plist`. Logs to `~/.blog-rank-tracker.log`.
+
+```bash
+# disable
+launchctl unload ~/Library/LaunchAgents/com.nilotpal.blog-rank-tracker.plist
+
+# re-enable
+launchctl load ~/Library/LaunchAgents/com.nilotpal.blog-rank-tracker.plist
+
+# check status
+launchctl list | grep nilotpal
+
+# tail logs
+tail -f ~/.blog-rank-tracker.log
+```
+
+Runs only when the Mac is awake. If your Mac is asleep at the trigger time, launchd waits until next wake — no missed Mondays as long as you open the laptop the same day.
 
 ## Files
 
