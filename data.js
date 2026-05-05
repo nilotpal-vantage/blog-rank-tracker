@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 const META = {
-  "history_start": "2025-05-05",
-  "history_end": "2026-05-03",
+  "history_start": "2025-05-06",
+  "history_end": "2026-05-04",
   "history_days": 364,
   "first_week": "2025-W19",
   "last_week": "2026-W18",
@@ -59,6 +59,6 @@ const META = {
     "2026-W17",
     "2026-W18"
   ],
-  "generated_at": "2026-05-04T04:30:12.830805Z",
+  "generated_at": "2026-05-05T06:27:13.473864Z",
   "post_count": 73
 };
