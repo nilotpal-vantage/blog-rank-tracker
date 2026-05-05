@@ -74,6 +74,7 @@
     <button data-tab="tracker"   class="tab py-3 border-b-2 tab-active">Rank Tracker</button>
     <button data-tab="movers"    class="tab py-3 border-b-2 tab-inactive">Movers</button>
     <button data-tab="ctr"       class="tab py-3 border-b-2 tab-inactive">CTR Fixes</button>
+    <button data-tab="recent"    class="tab py-3 border-b-2 tab-inactive">Recent Publishes</button>
   </div>
 </nav>
 
@@ -155,6 +156,19 @@
         Title or meta description rewrites — not full content rewrites.
       </p>
       <div id="ctr-list" class="text-sm"></div>
+    </div>
+  </section>
+
+  <section id="panel-recent" class="hidden">
+    <div class="bg-white rounded-lg border border-slate-200 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm text-slate-600">
+          Sorted by most recent activity.
+          <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 ml-1">Updated</span> = existing post with frontmatter <code>updated:</code> date.
+          <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 ml-1">New</span> = no <code>updated:</code> yet, only original publish date.
+        </p>
+      </div>
+      <div id="recent-list" class="text-sm"></div>
     </div>
   </section>
 
@@ -482,6 +496,59 @@ function renderCtr() {
     </div>`).join("");
 }
 
+// ─── Recent Publishes ──────────────────────────────────────────────────
+function activityDate(r) {
+  // Prefer updated; fall back to date. Empty strings count as missing.
+  const u = r.updated && r.updated.length ? r.updated : null;
+  const d = r.date && r.date.length ? r.date : null;
+  return u || d;
+}
+function isUpdated(r) {
+  return !!(r.updated && r.updated.length);
+}
+function relativeDate(dateStr, todayStr) {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  const today = new Date(todayStr);
+  if (isNaN(d)) return "—";
+  const diff = Math.floor((today - d) / 86400000);
+  if (diff < 0) return "in the future";
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Yesterday";
+  if (diff < 7)   return `${diff} days ago`;
+  if (diff < 30)  return `${Math.floor(diff / 7)}w ago`;
+  if (diff < 365) return `${Math.floor(diff / 30)}mo ago`;
+  return `${Math.floor(diff / 365)}y ago`;
+}
+function renderRecent() {
+  const today = META.generated_at.slice(0, 10);
+  const sorted = RANKINGS.slice().sort((a, b) => {
+    const da = activityDate(a) || "";
+    const db = activityDate(b) || "";
+    return db.localeCompare(da); // descending
+  });
+  document.getElementById("recent-list").innerHTML = sorted.map(r => {
+    const ad = activityDate(r);
+    const updated = isUpdated(r);
+    const badgeClass = updated ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800";
+    const badgeLabel = updated ? "Updated" : "New";
+    const ctxBits = [];
+    if (updated && r.date) ctxBits.push(`originally ${r.date}`);
+    return `
+      <div class="flex items-baseline gap-4 py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-slate-900 truncate">${r.title}</div>
+          <div class="text-xs text-slate-400 font-mono mt-0.5">${r.slug}${ctxBits.length ? ` · ${ctxBits.join(" · ")}` : ""}</div>
+        </div>
+        <div class="text-right whitespace-nowrap">
+          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium ${badgeClass}">${badgeLabel}</span>
+          <div class="font-mono text-xs text-slate-700 mt-0.5">${ad || "—"}</div>
+          <div class="text-[11px] text-slate-400">${relativeDate(ad, today)}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
 // ─── Modal ──────────────────────────────────────────────────────────────
 function lineChart(history, metric, w = 600, h = 140) {
   const points = history.filter(h => h[metric] !== null && h[metric] !== undefined && !(metric === "p" && h.i === 0));
@@ -590,12 +657,13 @@ function switchTab(name) {
     t.classList.toggle("tab-active", t.dataset.tab === name);
     t.classList.toggle("tab-inactive", t.dataset.tab !== name);
   });
-  ["overview", "tracker", "movers", "ctr"].forEach(p => {
+  ["overview", "tracker", "movers", "ctr", "recent"].forEach(p => {
     document.getElementById(`panel-${p}`).classList.toggle("hidden", p !== name);
   });
   if (name === "overview") renderOverview();
   if (name === "movers") renderMovers();
   if (name === "ctr") renderCtr();
+  if (name === "recent") renderRecent();
 }
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
 
@@ -716,6 +784,7 @@ function refreshAll() {
   if (!document.getElementById("panel-overview").classList.contains("hidden")) renderOverview();
   if (!document.getElementById("panel-movers").classList.contains("hidden")) renderMovers();
   if (!document.getElementById("panel-ctr").classList.contains("hidden")) renderCtr();
+  if (!document.getElementById("panel-recent").classList.contains("hidden")) renderRecent();
   if (state.modalSlug) openModal(state.modalSlug);
 }
 
