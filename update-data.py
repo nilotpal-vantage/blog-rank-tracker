@@ -39,6 +39,14 @@ POSTS_DIR = HERE.parent.parent / "vantagecircle-astro" / "content" / "en" / "pos
 AUTHOR_MATCH = "nilotpal"  # case-insensitive substring match in author field
 HISTORY_DAYS = 364  # 52 weeks
 
+# Slugs to exclude from the tracker (posts the user is no longer working on).
+EXCLUDED_SLUGS = {
+    "employee-onboarding-survey-questions",
+    "employee-retention-survey-questions",
+    "employee-satisfaction-survey",
+    "pulse-surveys",
+}
+
 POSTS_JSON = HERE / "_posts.json"
 DATA_JS = HERE / "data.js"
 RANKINGS_JS = HERE / "rankings.js"
@@ -60,8 +68,12 @@ def extract_posts() -> list[dict]:
         author_m = re.search(r"^author:\s*(.+)", fm, re.M)
         if not author_m or AUTHOR_MATCH not in author_m.group(1).lower():
             continue
+        slug_m_check = re.search(r'^slug:\s*"(.+?)"', fm, re.M)
+        slug_check = slug_m_check.group(1) if slug_m_check else fp.stem
+        if slug_check in EXCLUDED_SLUGS:
+            continue
         title_m = re.search(r'^title:\s*"(.+?)"', fm, re.M)
-        slug_m = re.search(r'^slug:\s*"(.+?)"', fm, re.M)
+        slug_m = slug_m_check
         date_m = re.search(r"^date:\s*(\S+)", fm, re.M)
         updated_m = re.search(r"^updated:\s*(\S+)", fm, re.M)
         tags_section = re.search(r"^tags:\s*\n((?:\s+-\s+.+\n)*)", fm, re.M)
