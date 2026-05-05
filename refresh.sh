@@ -24,9 +24,9 @@ git -C ../../vantagecircle-astro pull --ff-only --quiet \
 # Regenerate data.js + rankings.js
 python3 update-data.py
 
-# Push only if data files actually changed
-if ! git diff --quiet data.js rankings.js; then
-  git add data.js rankings.js
+# Push only if data files (or the index.html cache-bust pointer) actually changed
+if ! git diff --quiet data.js rankings.js index.html; then
+  git add data.js rankings.js index.html
   git commit -m "Auto-refresh data ($(date '+%Y-%m-%d'))"
   git push --quiet
   echo "[ok] Pushed refresh."

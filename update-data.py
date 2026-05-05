@@ -18,6 +18,7 @@ Usage:
 Auth comes from ../../gsc-mcp/gsc_tokens.db (existing OAuth stored creds).
 """
 
+import hashlib
 import json
 import re
 import sqlite3
@@ -50,6 +51,7 @@ EXCLUDED_SLUGS = {
 POSTS_JSON = HERE / "_posts.json"
 DATA_JS = HERE / "data.js"
 RANKINGS_JS = HERE / "rankings.js"
+INDEX_HTML = HERE / "index.html"
 
 
 # ─── Extract posts from Astro repo ────────────────────────────────────────
@@ -249,6 +251,16 @@ def main():
         "// Auto-generated. Do not edit.\n"
         f"const RANKINGS = {json.dumps(records, indent=2, ensure_ascii=False)};\n"
     )
+
+    # ─── Cache-bust the script tags in index.html ──────────────────────
+    if INDEX_HTML.exists():
+        digest = hashlib.md5(DATA_JS.read_bytes() + RANKINGS_JS.read_bytes()).hexdigest()[:10]
+        html = INDEX_HTML.read_text()
+        new_html = re.sub(r'src="data\.js(\?[^"]*)?"', f'src="data.js?v={digest}"', html)
+        new_html = re.sub(r'src="rankings\.js(\?[^"]*)?"', f'src="rankings.js?v={digest}"', new_html)
+        if new_html != html:
+            INDEX_HTML.write_text(new_html)
+            print(f"Cache-bust: data version = {digest}")
 
     # ─── Summary ───────────────────────────────────────────────────────
     matched = sum(1 for r in records if r["history"])
