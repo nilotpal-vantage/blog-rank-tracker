@@ -163,7 +163,7 @@
     <div class="bg-white rounded-lg border border-slate-200 p-5">
       <div class="flex items-center justify-between mb-4">
         <p class="text-sm text-slate-600">
-          Sorted by most recent activity.
+          Activity from <strong>April 2026 onward</strong>. Sorted by most recent.
           <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 ml-1">Updated</span> = existing post with frontmatter <code>updated:</code> date.
           <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 ml-1">New</span> = no <code>updated:</code> yet, only original publish date.
         </p>
@@ -520,14 +520,25 @@ function relativeDate(dateStr, todayStr) {
   if (diff < 365) return `${Math.floor(diff / 30)}mo ago`;
   return `${Math.floor(diff / 365)}y ago`;
 }
+const RECENT_CUTOFF = "2026-04-01";  // Hide posts whose latest activity is before this.
 function renderRecent() {
   const today = META.generated_at.slice(0, 10);
-  const sorted = RANKINGS.slice().sort((a, b) => {
-    const da = activityDate(a) || "";
-    const db = activityDate(b) || "";
-    return db.localeCompare(da); // descending
-  });
-  document.getElementById("recent-list").innerHTML = sorted.map(r => {
+  const sorted = RANKINGS.slice()
+    .filter(r => {
+      const ad = activityDate(r);
+      return ad && ad >= RECENT_CUTOFF;
+    })
+    .sort((a, b) => {
+      const da = activityDate(a) || "";
+      const db = activityDate(b) || "";
+      return db.localeCompare(da);
+    });
+  const listEl = document.getElementById("recent-list");
+  if (sorted.length === 0) {
+    listEl.innerHTML = `<div class="text-slate-400 italic py-4">No publishes/updates since ${RECENT_CUTOFF}.</div>`;
+    return;
+  }
+  listEl.innerHTML = sorted.map(r => {
     const ad = activityDate(r);
     const updated = isUpdated(r);
     const badgeClass = updated ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800";
