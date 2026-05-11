@@ -73,6 +73,7 @@
     <button data-tab="overview"  class="tab py-3 border-b-2 tab-inactive">Overview</button>
     <button data-tab="tracker"   class="tab py-3 border-b-2 tab-active">Rank Tracker</button>
     <button data-tab="movers"    class="tab py-3 border-b-2 tab-inactive">Movers</button>
+    <button data-tab="striking"  class="tab py-3 border-b-2 tab-inactive">Striking Distance</button>
     <button data-tab="ctr"       class="tab py-3 border-b-2 tab-inactive">CTR Fixes</button>
     <button data-tab="recent"    class="tab py-3 border-b-2 tab-inactive">Recent Publishes</button>
   </div>
@@ -81,6 +82,7 @@
 <main class="max-w-7xl mx-auto px-6 py-6">
 
   <section id="panel-overview" class="hidden">
+    <div id="portfolio-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3"></div>
     <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6"></div>
     <div class="grid md:grid-cols-2 gap-6">
       <div class="bg-white rounded-lg border border-slate-200 p-5">
@@ -133,6 +135,15 @@
   </section>
 
   <section id="panel-movers" class="hidden space-y-6">
+    <div class="bg-white rounded-lg border border-slate-200 p-4 flex items-center gap-3 flex-wrap">
+      <span class="text-xs text-slate-500 uppercase tracking-wider mr-1">Min impressions</span>
+      <button data-mingate="0"    class="mingate-btn seg-btn">No filter</button>
+      <button data-mingate="100"  class="mingate-btn seg-btn">≥100</button>
+      <button data-mingate="500"  class="mingate-btn seg-btn">≥500</button>
+      <button data-mingate="1000" class="mingate-btn seg-btn">≥1k</button>
+      <button data-mingate="5000" class="mingate-btn seg-btn">≥5k</button>
+      <span class="ml-auto text-xs text-slate-400">Filters out noise from low-volume rows</span>
+    </div>
     <div class="bg-white rounded-lg border border-slate-200 p-5">
       <h3 class="text-sm font-semibold text-slate-700 mb-3">Fell off Page 1 <span id="fell-count" class="text-slate-400 font-normal"></span></h3>
       <div id="movers-fell" class="text-sm"></div>
@@ -146,6 +157,16 @@
         <h3 class="text-sm font-semibold text-slate-700 mb-3">Bleeding <span class="text-slate-400 font-normal">(Δ ≥ +5)</span></h3>
         <div id="movers-bleeding" class="text-sm"></div>
       </div>
+    </div>
+  </section>
+
+  <section id="panel-striking" class="hidden">
+    <div class="bg-white rounded-lg border border-slate-200 p-5">
+      <p class="text-sm text-slate-600 mb-4">
+        Posts ranking in <strong>positions 11–20</strong> (just off page 1) with <strong>≥500 impressions</strong> in the selected window.
+        Sorted by impressions — the higher the volume, the bigger the prize for nudging onto page 1.
+      </p>
+      <div id="striking-list" class="text-sm"></div>
     </div>
   </section>
 
@@ -166,6 +187,7 @@
           Activity from <strong>April 2026 onward</strong>. Sorted by most recent.
           <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 ml-1">Updated</span> = existing post with frontmatter <code>updated:</code> date.
           <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 ml-1">New</span> = no <code>updated:</code> yet, only original publish date.
+          <br>Impact column shows position over the <strong>4 weeks before</strong> the activity date vs the <strong>4 weeks on/after</strong>.
         </p>
       </div>
       <div id="recent-list" class="text-sm"></div>
@@ -196,7 +218,11 @@
           <button data-metric="ctr" class="metric-btn seg-btn">CTR</button>
         </div>
       </div>
-      <div id="modal-chart" class="mb-5"></div>
+      <div id="modal-chart" class="mb-1"></div>
+      <div class="flex items-center gap-3 text-[10px] text-slate-500 mb-4">
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3" style="background:#dbeafe"></span>Current window</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3" style="background:#f1f5f9"></span>Prior window</span>
+      </div>
 
       <details>
         <summary class="text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-pointer">Weekly history table</summary>
@@ -228,6 +254,7 @@ const state = {
   search: "",
   buckets: new Set(["page2", "page3+"]),
   moversOnly: false,
+  moversMinImp: 500,
   sort: "position",
   sortDir: "asc",
   modalSlug: null,
@@ -295,10 +322,14 @@ function computedRanks() {
       prev_position: p.position,
       delta,
       impressions: c.impressions,
+      prev_impressions: p.impressions,
       clicks: c.clicks,
+      prev_clicks: p.clicks,
       ctr: c.ctr,
       bucket: bucketOf(c.position),
       prev_bucket: bucketOf(p.position),
+      date: r.date,
+      updated: r.updated,
       history: r.history,
     };
   });
@@ -367,9 +398,13 @@ function sparkline(history, weeks, w = 100, h = 28) {
   const last = points[points.length - 1].p;
   const first = points[0].p;
   const color = last < first ? "#16a34a" : (last > first ? "#dc2626" : "#94a3b8");
-  return `<svg class="sparkline" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-    <polyline fill="none" stroke="${color}" stroke-width="1.5" points="${pts}"/>
-  </svg>`;
+  // Inline label so visually-similar sparklines don't mask different absolute moves.
+  return `<div class="inline-flex flex-col items-center leading-none">
+    <svg class="sparkline" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+      <polyline fill="none" stroke="${color}" stroke-width="1.5" points="${pts}"/>
+    </svg>
+    <span class="text-[10px] font-mono text-slate-400 mt-0.5">${first.toFixed(1)} → ${last.toFixed(1)}</span>
+  </div>`;
 }
 
 // ─── Tracker rendering ──────────────────────────────────────────────────
@@ -432,6 +467,46 @@ function renderOverview() {
   const gainers = ranks.filter(r => r.delta !== null && r.delta <= -5).length;
   const droppers = ranks.filter(r => r.delta !== null && r.delta >= 5).length;
   const fellOff = ranks.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data").length;
+
+  // ─── Portfolio totals (impressions, clicks, weighted avg position) ────
+  let curImp = 0, curClk = 0, curPosImp = 0;
+  let priImp = 0, priClk = 0, priPosImp = 0;
+  ranks.forEach(r => {
+    curImp += r.impressions || 0;
+    curClk += r.clicks || 0;
+    if (r.position !== null) curPosImp += r.position * r.impressions;
+    priImp += r.prev_impressions || 0;
+    priClk += r.prev_clicks || 0;
+    if (r.prev_position !== null) priPosImp += r.prev_position * r.prev_impressions;
+  });
+  const curAvgPos = curImp > 0 ? curPosImp / curImp : null;
+  const priAvgPos = priImp > 0 ? priPosImp / priImp : null;
+  const pctChange = (cur, pri) => {
+    if (!pri) return null;
+    return ((cur - pri) / pri) * 100;
+  };
+  const pctCell = (n, invert = false) => {
+    if (n === null || !isFinite(n)) return `<span class="delta-flat text-xs">—</span>`;
+    if (Math.abs(n) < 0.5) return `<span class="delta-flat text-xs">±0%</span>`;
+    const good = invert ? n < 0 : n > 0;
+    const cls = good ? "delta-up" : "delta-down";
+    const arrow = n > 0 ? "▲" : "▼";
+    return `<span class="${cls} text-xs font-medium">${arrow} ${Math.abs(n).toFixed(1)}%</span>`;
+  };
+  const posDelta = (curAvgPos !== null && priAvgPos !== null) ? +(curAvgPos - priAvgPos).toFixed(2) : null;
+  const portfolioTile = (label, value, deltaHtml) => `
+    <div class="bg-white rounded-lg border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
+      <div class="flex items-baseline gap-2 mt-1">
+        <div class="text-2xl font-semibold text-slate-900">${value}</div>
+        <div>${deltaHtml}</div>
+      </div>
+    </div>`;
+  document.getElementById("portfolio-grid").innerHTML =
+    portfolioTile("Total Impressions", fmt(curImp), pctCell(pctChange(curImp, priImp))) +
+    portfolioTile("Total Clicks",      fmt(curClk), pctCell(pctChange(curClk, priClk))) +
+    portfolioTile("Avg Position",      curAvgPos !== null ? curAvgPos.toFixed(1) : "—", deltaCell(posDelta));
+
   const kpi = (label, value, color = "slate") => `
     <div class="bg-white rounded-lg border border-slate-200 p-4">
       <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
@@ -455,24 +530,49 @@ function renderOverview() {
 // ─── Movers ─────────────────────────────────────────────────────────────
 function renderMovers() {
   const ranks = computedRanks();
-  const fell     = ranks.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data").sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0));
-  const rising   = ranks.filter(r => r.delta !== null && r.delta <= -5).sort((a, b) => a.delta - b.delta);
-  const bleeding = ranks.filter(r => r.delta !== null && r.delta >= 5 && !(r.prev_bucket === "page1" && r.bucket !== "page1")).sort((a, b) => b.delta - a.delta);
+  const gate = state.moversMinImp;
+  // Use max(current, prior) impressions so we don't drop posts that lost all traffic.
+  const passes = r => Math.max(r.impressions || 0, r.prev_impressions || 0) >= gate;
+  const fell     = ranks.filter(r => r.prev_bucket === "page1" && r.bucket !== "page1" && r.bucket !== "no-data").filter(passes).sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0));
+  const rising   = ranks.filter(r => r.delta !== null && r.delta <= -5).filter(passes).sort((a, b) => a.delta - b.delta);
+  const bleeding = ranks.filter(r => r.delta !== null && r.delta >= 5 && !(r.prev_bucket === "page1" && r.bucket !== "page1")).filter(passes).sort((a, b) => b.delta - a.delta);
   document.getElementById("fell-count").textContent = `(${fell.length})`;
   const row = r => `
     <div class="flex items-baseline gap-3 py-2 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
       <div class="flex-1 min-w-0">
         <div class="font-medium text-slate-900 truncate">${r.title}</div>
-        <div class="text-xs text-slate-400 font-mono">${r.slug}</div>
+        <div class="text-xs text-slate-400 font-mono">${r.slug} · ${fmt(r.impressions)} impr</div>
       </div>
       <div class="text-right font-mono text-xs whitespace-nowrap">
         ${r.prev_position?.toFixed(1) ?? "—"} → <strong>${r.position?.toFixed(1) ?? "—"}</strong><br>
         ${deltaCell(r.delta)}
       </div>
     </div>`;
-  document.getElementById("movers-fell").innerHTML     = fell.length     ? fell.map(row).join("")     : `<div class="text-slate-400 italic py-4">None — nice.</div>`;
-  document.getElementById("movers-rising").innerHTML   = rising.length   ? rising.map(row).join("")   : `<div class="text-slate-400 italic py-4">No risers ≥5 positions.</div>`;
-  document.getElementById("movers-bleeding").innerHTML = bleeding.length ? bleeding.map(row).join("") : `<div class="text-slate-400 italic py-4">No droppers ≥5 positions.</div>`;
+  const empty = msg => `<div class="text-slate-400 italic py-4">${msg}</div>`;
+  document.getElementById("movers-fell").innerHTML     = fell.length     ? fell.map(row).join("")     : empty(gate > 0 ? `None at ≥${gate.toLocaleString()} impressions.` : "None — nice.");
+  document.getElementById("movers-rising").innerHTML   = rising.length   ? rising.map(row).join("")   : empty(`No risers ≥5 positions${gate > 0 ? ` at ≥${gate.toLocaleString()} impressions` : ""}.`);
+  document.getElementById("movers-bleeding").innerHTML = bleeding.length ? bleeding.map(row).join("") : empty(`No droppers ≥5 positions${gate > 0 ? ` at ≥${gate.toLocaleString()} impressions` : ""}.`);
+}
+
+// ─── Striking Distance ─────────────────────────────────────────────────
+function renderStriking() {
+  const ranks = computedRanks();
+  const candidates = ranks.filter(r => r.position !== null && r.position > 10 && r.position <= 20 && r.impressions >= 500)
+    .sort((a, b) => b.impressions - a.impressions);
+  if (candidates.length === 0) {
+    document.getElementById("striking-list").innerHTML = `<div class="text-slate-400 italic py-4">No candidates — nothing ranking 11–20 with meaningful volume in this window.</div>`;
+    return;
+  }
+  document.getElementById("striking-list").innerHTML = candidates.map(r => `
+    <div class="flex items-baseline gap-4 py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-slate-900 truncate">${r.title}</div>
+        <div class="text-xs text-slate-400 font-mono">${r.slug}</div>
+      </div>
+      <div class="text-right font-mono text-xs whitespace-nowrap">
+        Pos <strong>${r.position.toFixed(1)}</strong> · ${fmt(r.impressions)} impr · ${deltaCell(r.delta)}
+      </div>
+    </div>`).join("");
 }
 
 // ─── CTR Fixes ──────────────────────────────────────────────────────────
@@ -505,6 +605,34 @@ function activityDate(r) {
 }
 function isUpdated(r) {
   return !!(r.updated && r.updated.length);
+}
+// ISO week string ("YYYY-Www") for a given YYYY-MM-DD date.
+function dateToIsoWeek(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+}
+// Returns {pre, post, delta, preN, postN} — impression-weighted position over
+// `span` weeks immediately before and on/after the activity week.
+function rankAroundActivity(history, activityDateStr, span = 4) {
+  const wk = dateToIsoWeek(activityDateStr);
+  if (!wk) return { pre: null, post: null, delta: null, preN: 0, postN: 0 };
+  // Find the earliest tracked week at or after the activity week.
+  let idx = ALL_WEEKS.indexOf(wk);
+  if (idx < 0) idx = ALL_WEEKS.findIndex(w => w >= wk);
+  if (idx < 0) idx = ALL_WEEKS.length;  // activity in future of tracked data
+  const preWks  = ALL_WEEKS.slice(Math.max(0, idx - span), idx);
+  const postWks = ALL_WEEKS.slice(idx, idx + span);
+  const pre  = aggregate(history, preWks).position;
+  const post = aggregate(history, postWks).position;
+  const delta = (pre !== null && post !== null) ? +(post - pre).toFixed(2) : null;
+  return { pre, post, delta, preN: preWks.length, postN: postWks.length };
 }
 function relativeDate(dateStr, todayStr) {
   if (!dateStr) return "—";
@@ -545,11 +673,28 @@ function renderRecent() {
     const badgeLabel = updated ? "Updated" : "New";
     const ctxBits = [];
     if (updated && r.date) ctxBits.push(`originally ${r.date}`);
+    const impact = rankAroundActivity(r.history, ad);
+    let impactCell;
+    if (impact.pre === null && impact.post === null) {
+      impactCell = `<span class="text-slate-300 text-xs">no data</span>`;
+    } else if (impact.pre === null) {
+      impactCell = `<span class="font-mono text-xs">post ${impact.post.toFixed(1)}</span>` +
+                   `<div class="text-[10px] text-slate-400">new — no pre data</div>`;
+    } else if (impact.post === null) {
+      impactCell = `<span class="font-mono text-xs">pre ${impact.pre.toFixed(1)}</span>` +
+                   `<div class="text-[10px] text-slate-400">measuring</div>`;
+    } else {
+      impactCell = `<span class="font-mono text-xs">${impact.pre.toFixed(1)} → <strong>${impact.post.toFixed(1)}</strong> ${deltaCell(impact.delta)}</span>` +
+                   `<div class="text-[10px] text-slate-400">${impact.preN}w pre · ${impact.postN}w post</div>`;
+    }
     return `
       <div class="flex items-baseline gap-4 py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2" onclick="openModal('${r.slug}')">
         <div class="flex-1 min-w-0">
           <div class="font-medium text-slate-900 truncate">${r.title}</div>
           <div class="text-xs text-slate-400 font-mono mt-0.5">${r.slug}${ctxBits.length ? ` · ${ctxBits.join(" · ")}` : ""}</div>
+        </div>
+        <div class="text-right whitespace-nowrap min-w-[150px]">
+          ${impactCell}
         </div>
         <div class="text-right whitespace-nowrap">
           <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium ${badgeClass}">${badgeLabel}</span>
@@ -588,7 +733,21 @@ function lineChart(history, metric, w = 600, h = 140) {
     { i: Math.floor(points.length / 2), txt: points[Math.floor(points.length / 2)].w },
     { i: points.length - 1, txt: points[points.length - 1].w },
   ];
+  // Shade current + prior windows by mapping selected weeks to point indices.
+  // Half-step padding on either end keeps the band aligned with sample marks.
+  const curWks = new Set(currentWeeks());
+  const priWks = new Set(priorWeeks());
+  const bandRect = (wkSet, fill) => {
+    const idx = points.map((p, i) => wkSet.has(p.w) ? i : -1).filter(i => i >= 0);
+    if (idx.length === 0) return "";
+    const x0 = xScale(idx[0]) - stepX / 2;
+    const x1 = xScale(idx[idx.length - 1]) + stepX / 2;
+    return `<rect x="${Math.max(padX, x0).toFixed(1)}" y="${padY}" width="${Math.max(0, Math.min(w - 10, x1) - Math.max(padX, x0)).toFixed(1)}" height="${innerH}" fill="${fill}"/>`;
+  };
+  const priBand = bandRect(priWks, "#f1f5f9");  // slate-100 — neutral
+  const curBand = bandRect(curWks, "#dbeafe");  // blue-100 — active
   return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="max-width:${w}px;display:block">
+    ${priBand}${curBand}
     <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h - padY}" stroke="#e2e8f0"/>
     <line x1="${padX}" y1="${h - padY}" x2="${w - 10}" y2="${h - padY}" stroke="#e2e8f0"/>
     <text x="${padX - 6}" y="${padY + 4}" text-anchor="end" font-size="10" fill="#64748b">${labelFmt(labelTop)}</text>
@@ -668,11 +827,12 @@ function switchTab(name) {
     t.classList.toggle("tab-active", t.dataset.tab === name);
     t.classList.toggle("tab-inactive", t.dataset.tab !== name);
   });
-  ["overview", "tracker", "movers", "ctr", "recent"].forEach(p => {
+  ["overview", "tracker", "movers", "striking", "ctr", "recent"].forEach(p => {
     document.getElementById(`panel-${p}`).classList.toggle("hidden", p !== name);
   });
   if (name === "overview") renderOverview();
   if (name === "movers") renderMovers();
+  if (name === "striking") renderStriking();
   if (name === "ctr") renderCtr();
   if (name === "recent") renderRecent();
 }
@@ -727,6 +887,19 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
 
 document.getElementById("movers-only").addEventListener("change", e => { state.moversOnly = e.target.checked; renderTracker(); });
+
+function setActiveMinGate() {
+  document.querySelectorAll(".mingate-btn").forEach(b => {
+    b.classList.toggle("seg-btn-active", Number(b.dataset.mingate) === state.moversMinImp);
+  });
+}
+document.querySelectorAll(".mingate-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    state.moversMinImp = Number(b.dataset.mingate);
+    setActiveMinGate();
+    renderMovers();
+  });
+});
 
 document.querySelectorAll("th[data-sort]").forEach(th => {
   th.style.cursor = "pointer";
@@ -794,6 +967,7 @@ function refreshAll() {
   // Re-render whichever non-default tab is visible
   if (!document.getElementById("panel-overview").classList.contains("hidden")) renderOverview();
   if (!document.getElementById("panel-movers").classList.contains("hidden")) renderMovers();
+  if (!document.getElementById("panel-striking").classList.contains("hidden")) renderStriking();
   if (!document.getElementById("panel-ctr").classList.contains("hidden")) renderCtr();
   if (!document.getElementById("panel-recent").classList.contains("hidden")) renderRecent();
   if (state.modalSlug) openModal(state.modalSlug);
@@ -802,6 +976,7 @@ function refreshAll() {
 // ─── Init ───────────────────────────────────────────────────────────────
 initCustomRange();
 setActiveWindow();
+setActiveMinGate();
 updatePeriodLine();
 renderTracker();
 </script>
