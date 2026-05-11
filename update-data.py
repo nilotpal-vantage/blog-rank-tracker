@@ -51,7 +51,13 @@ EXCLUDED_SLUGS = {
 POSTS_JSON = HERE / "_posts.json"
 DATA_JS = HERE / "data.js"
 RANKINGS_JS = HERE / "rankings.js"
+QUERIES_JS = HERE / "queries.js"
 INDEX_HTML = HERE / "index.html"
+
+# How many top queries to keep per post (by total annual impressions).
+QUERIES_TOP_N = 25
+# Drop queries below this annual impression count to suppress long-tail noise.
+QUERIES_MIN_IMP = 50
 
 
 # ─── Extract posts from Astro repo ────────────────────────────────────────
@@ -164,6 +170,32 @@ def query_daily_paginated(service, start: str, end: str, regex: str) -> list[dic
     return rows
 
 
+def query_with_queries_paginated(service, start: str, end: str, regex: str) -> list[dict]:
+    """Pull date+page+query rows. GSC returns at most 25k per page, so paginate."""
+    rows = []
+    start_row = 0
+    while True:
+        body = {
+            "startDate": start,
+            "endDate": end,
+            "dimensions": ["date", "page", "query"],
+            "dimensionFilterGroups": [
+                {"filters": [{"dimension": "page", "operator": "includingRegex", "expression": regex}]}
+            ],
+            "rowLimit": PAGE_LIMIT,
+            "startRow": start_row,
+            "dataState": "final",
+        }
+        resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute()
+        chunk = resp.get("rows", [])
+        rows.extend(chunk)
+        print(f"  page {start_row // PAGE_LIMIT + 1}: +{len(chunk)} rows (total {len(rows)})")
+        if len(chunk) < PAGE_LIMIT:
+            break
+        start_row += PAGE_LIMIT
+    return rows
+
+
 def slug_from_url(url: str) -> str:
     return url.replace(BLOG_PREFIX, "").rstrip("/")
 
@@ -254,12 +286,69 @@ def main():
         f"const RANKINGS = {json.dumps(records, indent=2, ensure_ascii=False)};\n"
     )
 
+    # ─── Query-level pull ──────────────────────────────────────────────
+    print("Querying date+page+query (paginated)…")
+    qrows = query_with_queries_paginated(svc, start.isoformat(), end.isoformat(), regex)
+
+    # Bucket into ISO weeks per (slug, query). GSC returns the query string
+    # as the third key; anonymized queries come back as "" — skip those.
+    qhist: dict[str, dict[str, dict[str, dict]]] = {}
+    for r in qrows:
+        date_str, url, q = r["keys"]
+        if not q:
+            continue
+        s = slug_from_url(url)
+        d = datetime.strptime(date_str, "%Y-%m-%d").date()
+        iso = d.isocalendar()
+        wk = f"{iso[0]}-W{iso[1]:02d}"
+        qhist.setdefault(s, {}).setdefault(q, {}).setdefault(
+            wk, {"pos_imp_sum": 0.0, "imp": 0, "clicks": 0}
+        )
+        b = qhist[s][q][wk]
+        b["pos_imp_sum"] += r["position"] * r["impressions"]
+        b["imp"] += r["impressions"]
+        b["clicks"] += r["clicks"]
+
+    # Build QUERIES = { slug: [{q, ti, tc, h: [...]}, ...] } keeping top N per slug.
+    queries_out: dict[str, list[dict]] = {}
+    for s, qmap in qhist.items():
+        ranked = []
+        for q, wkmap in qmap.items():
+            total_i = sum(b["imp"] for b in wkmap.values())
+            total_c = sum(b["clicks"] for b in wkmap.values())
+            if total_i < QUERIES_MIN_IMP:
+                continue
+            history = []
+            for wk in sorted(wkmap.keys()):
+                b = wkmap[wk]
+                pos = b["pos_imp_sum"] / b["imp"] if b["imp"] > 0 else None
+                ctr = b["clicks"] / b["imp"] if b["imp"] > 0 else 0
+                history.append({
+                    "w": wk,
+                    "p": round(pos, 2) if pos is not None else None,
+                    "i": b["imp"],
+                    "c": b["clicks"],
+                    "ctr": round(ctr, 4),
+                })
+            ranked.append({"q": q, "ti": total_i, "tc": total_c, "h": history})
+        ranked.sort(key=lambda x: x["ti"], reverse=True)
+        queries_out[s] = ranked[:QUERIES_TOP_N]
+
+    # Compact JSON — queries.js is large enough that pretty-printing doubles it.
+    QUERIES_JS.write_text(
+        "// Auto-generated. Do not edit.\n"
+        f"const QUERIES = {json.dumps(queries_out, separators=(',', ':'), ensure_ascii=False)};\n"
+    )
+
     # ─── Cache-bust the script tags in index.html ──────────────────────
     if INDEX_HTML.exists():
-        digest = hashlib.md5(DATA_JS.read_bytes() + RANKINGS_JS.read_bytes()).hexdigest()[:10]
+        digest = hashlib.md5(
+            DATA_JS.read_bytes() + RANKINGS_JS.read_bytes() + QUERIES_JS.read_bytes()
+        ).hexdigest()[:10]
         html = INDEX_HTML.read_text()
         new_html = re.sub(r'src="data\.js(\?[^"]*)?"', f'src="data.js?v={digest}"', html)
         new_html = re.sub(r'src="rankings\.js(\?[^"]*)?"', f'src="rankings.js?v={digest}"', new_html)
+        new_html = re.sub(r'src="queries\.js(\?[^"]*)?"', f'src="queries.js?v={digest}"', new_html)
         if new_html != html:
             INDEX_HTML.write_text(new_html)
             print(f"Cache-bust: data version = {digest}")
@@ -271,6 +360,7 @@ def main():
     print(f"Weeks covered       : {len(all_weeks)} ({all_weeks[0] if all_weeks else '—'} → {all_weeks[-1] if all_weeks else '—'})")
     print(f"Wrote {DATA_JS.name} ({DATA_JS.stat().st_size:,} bytes)")
     print(f"Wrote {RANKINGS_JS.name} ({RANKINGS_JS.stat().st_size:,} bytes)")
+    print(f"Wrote {QUERIES_JS.name} ({QUERIES_JS.stat().st_size:,} bytes) — {sum(len(v) for v in queries_out.values())} queries across {len(queries_out)} posts")
 
 
 if __name__ == "__main__":

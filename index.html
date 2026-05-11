@@ -75,6 +75,7 @@
     <button data-tab="movers"    class="tab py-3 border-b-2 tab-inactive">Movers</button>
     <button data-tab="striking"  class="tab py-3 border-b-2 tab-inactive">Striking Distance</button>
     <button data-tab="ctr"       class="tab py-3 border-b-2 tab-inactive">CTR Fixes</button>
+    <button data-tab="queries"   class="tab py-3 border-b-2 tab-inactive">Queries</button>
     <button data-tab="recent"    class="tab py-3 border-b-2 tab-inactive">Recent Publishes</button>
   </div>
 </nav>
@@ -180,6 +181,57 @@
     </div>
   </section>
 
+  <section id="panel-queries" class="hidden">
+    <div class="bg-white rounded-lg border border-slate-200 mb-4 p-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <input id="queries-search" type="search" placeholder="Search query or post…" class="w-64">
+        <select id="queries-post-filter" class="text-xs"></select>
+        <div class="flex gap-1 text-xs">
+          <button data-qbucket="page1"   class="qbucket-btn px-3 py-1.5 rounded border bucket-page1 border-green-300">Page 1</button>
+          <button data-qbucket="page2"   class="qbucket-btn px-3 py-1.5 rounded border bucket-page2 border-amber-300">Page 2</button>
+          <button data-qbucket="page3+"  class="qbucket-btn px-3 py-1.5 rounded border bucket-page3 border-red-300">Page 3+</button>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-xs text-slate-500">Min impr</span>
+          <button data-qmingate="0"    class="qmingate-btn seg-btn">All</button>
+          <button data-qmingate="100"  class="qmingate-btn seg-btn">≥100</button>
+          <button data-qmingate="500"  class="qmingate-btn seg-btn">≥500</button>
+          <button data-qmingate="1000" class="qmingate-btn seg-btn">≥1k</button>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-slate-600">
+          <input id="queries-striking-only" type="checkbox" class="rounded">
+          Striking distance only (pos 11–20)
+        </label>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-sm text-slate-500"><span id="queries-row-count">0</span> queries</span>
+          <button id="dl-queries" class="seg-btn">⬇ Queries CSV</button>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 mt-2">
+        Top ~25 queries per post by annual impressions. Click a row to open its post detail.
+        Position is impression-weighted average across the selected window.
+      </p>
+    </div>
+
+    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-4 py-3 text-left font-medium" data-qsort="query">Query</th>
+            <th class="px-3 py-3 text-left font-medium" data-qsort="title">Post</th>
+            <th class="px-3 py-3 text-right font-medium" data-qsort="position">Pos</th>
+            <th class="px-3 py-3 text-right font-medium" data-qsort="delta">Δ</th>
+            <th class="px-3 py-3 text-right font-medium" data-qsort="impressions">Impr</th>
+            <th class="px-3 py-3 text-right font-medium" data-qsort="clicks">Clicks</th>
+            <th class="px-3 py-3 text-right font-medium" data-qsort="ctr">CTR</th>
+            <th class="px-3 py-3 text-center font-medium">Bucket</th>
+          </tr>
+        </thead>
+        <tbody id="queries-body"></tbody>
+      </table>
+    </div>
+  </section>
+
   <section id="panel-recent" class="hidden">
     <div class="bg-white rounded-lg border border-slate-200 p-5">
       <div class="flex items-center justify-between mb-4">
@@ -224,6 +276,11 @@
         <span class="flex items-center gap-1"><span class="inline-block w-3 h-3" style="background:#f1f5f9"></span>Prior window</span>
       </div>
 
+      <details open class="mb-4">
+        <summary class="text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-pointer mb-2">Top queries (selected window)</summary>
+        <div id="modal-queries" class="mt-2"></div>
+      </details>
+
       <details>
         <summary class="text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-pointer">Weekly history table</summary>
         <table class="w-full text-xs mt-2">
@@ -243,8 +300,9 @@
   </div>
 </div>
 
-<script src="data.js?v=ff855b881f"></script>
-<script src="rankings.js?v=ff855b881f"></script>
+<script src="data.js?v=1244faab9d"></script>
+<script src="rankings.js?v=1244faab9d"></script>
+<script src="queries.js?v=1244faab9d"></script>
 <script>
 // ─── State ──────────────────────────────────────────────────────────────
 const state = {
@@ -259,6 +317,14 @@ const state = {
   sortDir: "asc",
   modalSlug: null,
   modalMetric: "p",
+  // Queries tab
+  qSearch: "",
+  qPostFilter: "",        // slug filter; "" = all posts
+  qBuckets: new Set(["page1", "page2", "page3+"]),
+  qMinImp: 100,
+  qStrikingOnly: false,
+  qSort: "impressions",
+  qSortDir: "desc",
 };
 
 const ALL_WEEKS = META.all_weeks || [];
@@ -596,6 +662,101 @@ function renderCtr() {
     </div>`).join("");
 }
 
+// ─── Queries ───────────────────────────────────────────────────────────
+function computedQueries() {
+  const cur = currentWeeks();
+  const pri = priorWeeks();
+  const out = [];
+  for (const slug in QUERIES) {
+    const post = RANKINGS.find(r => r.slug === slug);
+    const title = post ? post.title : slug;
+    const url = post ? post.url : "";
+    for (const q of QUERIES[slug]) {
+      const c = aggregate(q.h, cur);
+      const p = aggregate(q.h, pri);
+      const delta = (c.position !== null && p.position !== null) ? +(c.position - p.position).toFixed(2) : null;
+      out.push({
+        query: q.q,
+        slug, title, url,
+        position: c.position,
+        prev_position: p.position,
+        delta,
+        impressions: c.impressions,
+        prev_impressions: p.impressions,
+        clicks: c.clicks,
+        ctr: c.ctr,
+        bucket: bucketOf(c.position),
+        prev_bucket: bucketOf(p.position),
+        history: q.h,
+      });
+    }
+  }
+  return out;
+}
+
+function applyQueriesFilters(rows) {
+  let out = rows.slice();
+  if (state.qSearch) {
+    const q = state.qSearch.toLowerCase();
+    out = out.filter(r => r.query.toLowerCase().includes(q) || r.title.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q));
+  }
+  if (state.qPostFilter) {
+    out = out.filter(r => r.slug === state.qPostFilter);
+  }
+  if (state.qBuckets.size > 0 && state.qBuckets.size < 3) {
+    out = out.filter(r => state.qBuckets.has(r.bucket));
+  } else if (state.qBuckets.size === 0) {
+    out = [];
+  }
+  if (state.qMinImp > 0) {
+    out = out.filter(r => (r.impressions || 0) >= state.qMinImp);
+  }
+  if (state.qStrikingOnly) {
+    out = out.filter(r => r.position !== null && r.position > 10 && r.position <= 20);
+  }
+  const dir = state.qSortDir === "asc" ? 1 : -1;
+  out.sort((a, b) => {
+    const av = a[state.qSort], bv = b[state.qSort];
+    if (av === null || av === undefined) return 1;
+    if (bv === null || bv === undefined) return -1;
+    if (typeof av === "string") return dir * av.localeCompare(bv);
+    return dir * (av - bv);
+  });
+  return out;
+}
+
+function renderQueries() {
+  const rows = applyQueriesFilters(computedQueries());
+  document.getElementById("queries-row-count").textContent = rows.length;
+  const body = document.getElementById("queries-body");
+  if (rows.length === 0) {
+    body.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400 italic">No queries match.</td></tr>`;
+    return;
+  }
+  // Cap render at 500 rows to keep DOM snappy; row count above shows full filtered total.
+  const MAX_RENDER = 500;
+  const slice = rows.slice(0, MAX_RENDER);
+  body.innerHTML = slice.map(r => `
+    <tr data-slug="${r.slug}" class="border-b border-slate-100 last:border-b-0">
+      <td class="px-4 py-2.5 max-w-xs">
+        <div class="font-medium text-slate-900 leading-snug truncate" title="${r.query.replace(/"/g, "&quot;")}">${r.query}</div>
+      </td>
+      <td class="px-3 py-2.5 max-w-xs">
+        <div class="text-xs text-slate-600 truncate" title="${r.title.replace(/"/g, "&quot;")}">${r.title}</div>
+      </td>
+      <td class="px-3 py-2.5 text-right font-mono">${r.position !== null ? r.position.toFixed(1) : "—"}</td>
+      <td class="px-3 py-2.5 text-right font-mono">${deltaCell(r.delta)}</td>
+      <td class="px-3 py-2.5 text-right font-mono">${fmt(r.impressions)}</td>
+      <td class="px-3 py-2.5 text-right font-mono">${fmt(r.clicks)}</td>
+      <td class="px-3 py-2.5 text-right font-mono">${pct(r.ctr)}</td>
+      <td class="px-3 py-2.5 text-center">${bucketBadge(r.bucket)}</td>
+    </tr>
+  `).join("") + (rows.length > MAX_RENDER ? `<tr><td colspan="8" class="py-3 text-center text-xs text-slate-400 italic">Showing first ${MAX_RENDER} of ${rows.length} — narrow your filters or download the CSV.</td></tr>` : "");
+  document.querySelectorAll("#queries-body tr[data-slug]").forEach(tr => {
+    tr.addEventListener("click", () => openModal(tr.dataset.slug));
+  });
+}
+
 // ─── Recent Publishes ──────────────────────────────────────────────────
 function activityDate(r) {
   // Prefer updated; fall back to date. Empty strings count as missing.
@@ -783,6 +944,7 @@ window.openModal = function(slug) {
     stat("Clicks · CTR", `${fmt(c.clicks)} · ${pct(c.ctr)}`);
 
   renderModalChart();
+  renderModalQueries(slug);
 
   // Full history table (latest first)
   const hist = (r.history || []).slice().reverse();
@@ -807,6 +969,59 @@ function renderModalChart() {
   });
 }
 
+function renderModalQueries(slug) {
+  const el = document.getElementById("modal-queries");
+  const qs = QUERIES[slug];
+  if (!qs || qs.length === 0) {
+    el.innerHTML = `<div class="text-xs text-slate-400 italic py-3">No query-level data for this post.</div>`;
+    return;
+  }
+  const cur = currentWeeks();
+  const pri = priorWeeks();
+  const rows = qs.map(q => {
+    const c = aggregate(q.h, cur);
+    const p = aggregate(q.h, pri);
+    const delta = (c.position !== null && p.position !== null) ? +(c.position - p.position).toFixed(2) : null;
+    return {
+      query: q.q,
+      position: c.position,
+      delta,
+      impressions: c.impressions,
+      clicks: c.clicks,
+      ctr: c.ctr,
+      bucket: bucketOf(c.position),
+    };
+  }).filter(r => r.impressions > 0).sort((a, b) => b.impressions - a.impressions);
+  if (rows.length === 0) {
+    el.innerHTML = `<div class="text-xs text-slate-400 italic py-3">No query impressions in this window.</div>`;
+    return;
+  }
+  el.innerHTML = `<table class="w-full text-xs">
+    <thead class="text-slate-500 border-b border-slate-200">
+      <tr>
+        <th class="text-left py-1.5 font-medium">Query</th>
+        <th class="text-right py-1.5 font-medium">Pos</th>
+        <th class="text-right py-1.5 font-medium">Δ</th>
+        <th class="text-right py-1.5 font-medium">Impr</th>
+        <th class="text-right py-1.5 font-medium">Clicks</th>
+        <th class="text-right py-1.5 font-medium">CTR</th>
+        <th class="text-center py-1.5 font-medium">Bucket</th>
+      </tr>
+    </thead>
+    <tbody>${rows.map(r => `
+      <tr class="border-b border-slate-100 last:border-b-0">
+        <td class="py-1.5 pr-2" title="${r.query.replace(/"/g, "&quot;")}">${r.query}</td>
+        <td class="py-1.5 text-right font-mono">${r.position !== null ? r.position.toFixed(1) : "—"}</td>
+        <td class="py-1.5 text-right font-mono">${deltaCell(r.delta)}</td>
+        <td class="py-1.5 text-right font-mono">${fmt(r.impressions)}</td>
+        <td class="py-1.5 text-right font-mono">${fmt(r.clicks)}</td>
+        <td class="py-1.5 text-right font-mono">${pct(r.ctr)}</td>
+        <td class="py-1.5 text-center">${bucketBadge(r.bucket)}</td>
+      </tr>
+    `).join("")}</tbody>
+  </table>`;
+}
+
 window.closeModal = function() {
   document.getElementById("modal").classList.add("hidden");
   document.getElementById("modal").classList.remove("flex");
@@ -827,13 +1042,14 @@ function switchTab(name) {
     t.classList.toggle("tab-active", t.dataset.tab === name);
     t.classList.toggle("tab-inactive", t.dataset.tab !== name);
   });
-  ["overview", "tracker", "movers", "striking", "ctr", "recent"].forEach(p => {
+  ["overview", "tracker", "movers", "striking", "ctr", "queries", "recent"].forEach(p => {
     document.getElementById(`panel-${p}`).classList.toggle("hidden", p !== name);
   });
   if (name === "overview") renderOverview();
   if (name === "movers") renderMovers();
   if (name === "striking") renderStriking();
   if (name === "ctr") renderCtr();
+  if (name === "queries") renderQueries();
   if (name === "recent") renderRecent();
 }
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
@@ -911,6 +1127,62 @@ document.querySelectorAll("th[data-sort]").forEach(th => {
   });
 });
 
+// ─── Queries filter wiring ──────────────────────────────────────────────
+function initQueriesPostFilter() {
+  const sel = document.getElementById("queries-post-filter");
+  const slugs = Object.keys(QUERIES).sort((a, b) => {
+    const ta = (RANKINGS.find(r => r.slug === a) || {}).title || a;
+    const tb = (RANKINGS.find(r => r.slug === b) || {}).title || b;
+    return ta.localeCompare(tb);
+  });
+  const opts = ['<option value="">All posts</option>'].concat(
+    slugs.map(s => {
+      const t = (RANKINGS.find(r => r.slug === s) || {}).title || s;
+      return `<option value="${s}">${t.replace(/</g, "&lt;")}</option>`;
+    })
+  );
+  sel.innerHTML = opts.join("");
+  sel.addEventListener("change", () => { state.qPostFilter = sel.value; renderQueries(); });
+}
+function setActiveQBucket() {
+  document.querySelectorAll(".qbucket-btn").forEach(b => {
+    b.style.opacity = state.qBuckets.has(b.dataset.qbucket) ? "1" : "0.4";
+  });
+}
+function setActiveQMinGate() {
+  document.querySelectorAll(".qmingate-btn").forEach(b => {
+    b.classList.toggle("seg-btn-active", Number(b.dataset.qmingate) === state.qMinImp);
+  });
+}
+document.getElementById("queries-search").addEventListener("input", e => { state.qSearch = e.target.value; renderQueries(); });
+document.querySelectorAll(".qbucket-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const f = btn.dataset.qbucket;
+    if (state.qBuckets.has(f)) state.qBuckets.delete(f); else state.qBuckets.add(f);
+    setActiveQBucket();
+    renderQueries();
+  });
+});
+document.querySelectorAll(".qmingate-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    state.qMinImp = Number(btn.dataset.qmingate);
+    setActiveQMinGate();
+    renderQueries();
+  });
+});
+document.getElementById("queries-striking-only").addEventListener("change", e => {
+  state.qStrikingOnly = e.target.checked; renderQueries();
+});
+document.querySelectorAll("th[data-qsort]").forEach(th => {
+  th.style.cursor = "pointer";
+  th.addEventListener("click", () => {
+    const col = th.dataset.qsort;
+    if (state.qSort === col) state.qSortDir = state.qSortDir === "asc" ? "desc" : "asc";
+    else { state.qSort = col; state.qSortDir = (col === "query" || col === "title") ? "asc" : "desc"; }
+    renderQueries();
+  });
+});
+
 // ─── CSV downloads ──────────────────────────────────────────────────────
 function csvEscape(v) {
   if (v === null || v === undefined) return "";
@@ -944,6 +1216,19 @@ document.getElementById("dl-summary").addEventListener("click", () => {
   ]);
   downloadCSV(`blog-rank-summary_${windowLabel()}.csv`, header, rows);
 });
+document.getElementById("dl-queries").addEventListener("click", () => {
+  const rows = applyQueriesFilters(computedQueries());
+  const header = ["Query", "Post Slug", "Post Title", "Position", "Delta", "Impressions", "Clicks", "CTR", "Bucket"];
+  const out = rows.map(r => [
+    r.query, r.slug, r.title,
+    r.position !== null ? r.position.toFixed(2) : "",
+    r.delta !== null ? r.delta.toFixed(2) : "",
+    r.impressions, r.clicks,
+    (r.ctr * 100).toFixed(2) + "%",
+    r.bucket,
+  ]);
+  downloadCSV(`queries_${windowLabel()}.csv`, header, out);
+});
 document.getElementById("dl-weekly").addEventListener("click", () => {
   const header = ["Week", "Slug", "Title", "Position", "Impressions", "Clicks", "CTR"];
   const rows = [];
@@ -969,14 +1254,18 @@ function refreshAll() {
   if (!document.getElementById("panel-movers").classList.contains("hidden")) renderMovers();
   if (!document.getElementById("panel-striking").classList.contains("hidden")) renderStriking();
   if (!document.getElementById("panel-ctr").classList.contains("hidden")) renderCtr();
+  if (!document.getElementById("panel-queries").classList.contains("hidden")) renderQueries();
   if (!document.getElementById("panel-recent").classList.contains("hidden")) renderRecent();
   if (state.modalSlug) openModal(state.modalSlug);
 }
 
 // ─── Init ───────────────────────────────────────────────────────────────
 initCustomRange();
+initQueriesPostFilter();
 setActiveWindow();
 setActiveMinGate();
+setActiveQBucket();
+setActiveQMinGate();
 updatePeriodLine();
 renderTracker();
 </script>
