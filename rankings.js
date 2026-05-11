@@ -7770,17 +7770,6 @@ const RANKINGS = [
     ]
   },
   {
-    "title": "25 Proven Employee Engagement Strategies HR Leaders Use in 2026",
-    "slug": "employee-engagement-strategies-draft",
-    "url": "https://www.vantagecircle.com/en/blog/employee-engagement-strategies-draft/",
-    "date": "2019-06-27",
-    "updated": "2026-05-06",
-    "tags": [
-      "employee-engagement"
-    ],
-    "history": []
-  },
-  {
     "title": "10 Employee Engagement Strategies That Drive Results",
     "slug": "employee-engagement-strategies",
     "url": "https://www.vantagecircle.com/en/blog/employee-engagement-strategies/",

@@ -74,6 +74,8 @@ def extract_posts() -> list[dict]:
         slug_check = slug_m_check.group(1) if slug_m_check else fp.stem
         if slug_check in EXCLUDED_SLUGS:
             continue
+        if slug_check.endswith("-draft"):
+            continue
         title_m = re.search(r'^title:\s*"(.+?)"', fm, re.M)
         slug_m = slug_m_check
         date_m = re.search(r"^date:\s*(\S+)", fm, re.M)
