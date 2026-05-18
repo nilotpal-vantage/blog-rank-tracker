@@ -259,15 +259,25 @@
       <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
     </div>
     <div class="p-5">
-      <div id="modal-stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+      <div class="mb-1 text-[10px] uppercase tracking-wider text-slate-500">URL-level (all queries)</div>
+      <div id="modal-stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
 
-      <div class="flex items-center justify-between mb-2">
+      <div class="mb-1 text-[10px] uppercase tracking-wider text-slate-500">Target keyword: <span id="modal-target-kw" class="font-medium text-slate-700"></span></div>
+      <div id="modal-stats-target" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+
+      <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
         <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500">Trend</h4>
-        <div class="flex gap-1">
-          <button data-metric="p"   class="metric-btn seg-btn">Position</button>
-          <button data-metric="i"   class="metric-btn seg-btn">Impressions</button>
-          <button data-metric="c"   class="metric-btn seg-btn">Clicks</button>
-          <button data-metric="ctr" class="metric-btn seg-btn">CTR</button>
+        <div class="flex items-center gap-3">
+          <div class="flex gap-1">
+            <button data-source="url"    class="source-btn seg-btn">URL</button>
+            <button data-source="target" class="source-btn seg-btn">Target</button>
+          </div>
+          <div class="flex gap-1">
+            <button data-metric="p"   class="metric-btn seg-btn">Position</button>
+            <button data-metric="i"   class="metric-btn seg-btn">Impressions</button>
+            <button data-metric="c"   class="metric-btn seg-btn">Clicks</button>
+            <button data-metric="ctr" class="metric-btn seg-btn">CTR</button>
+          </div>
         </div>
       </div>
       <div id="modal-chart" class="mb-1"></div>
@@ -317,6 +327,7 @@ const state = {
   sortDir: "asc",
   modalSlug: null,
   modalMetric: "p",
+  modalSource: "url",   // "url" = URL-level history (all queries); "target" = target keyword only
   // Queries tab
   qSearch: "",
   qPostFilter: "",        // slug filter; "" = all posts
@@ -973,27 +984,63 @@ window.openModal = function(slug) {
   const link = document.getElementById("modal-link");
   link.href = r.url; link.textContent = r.url;
 
-  // Stats for the SELECTED window
+  // Target keyword label
+  const tkw = r.target_keyword || "—";
+  const tBadge = !r.target_keyword
+    ? ` <span class="text-[10px] text-amber-600 italic">(no target keyword)</span>`
+    : r.target_source === "manual"
+      ? ` <span class="text-[10px] uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1">target</span>`
+      : ` <span class="text-[10px] uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 rounded px-1">top query</span>`;
+  document.getElementById("modal-target-kw").innerHTML = tkw + tBadge;
+
+  // Stats for the SELECTED window — both URL-level and target-keyword
   const cur = currentWeeks(), pri = priorWeeks();
-  const c = aggregate(r.history, cur);
-  const p = aggregate(r.history, pri);
-  const delta = (c.position !== null && p.position !== null) ? +(c.position - p.position).toFixed(2) : null;
   const stat = (label, value) => `
     <div class="bg-slate-50 rounded p-3">
       <div class="text-[10px] text-slate-500 uppercase tracking-wider">${label}</div>
       <div class="font-mono text-base mt-0.5">${value}</div>
     </div>`;
-  document.getElementById("modal-stats").innerHTML =
-    stat("Position", c.position !== null ? c.position.toFixed(1) : "—") +
-    stat("Δ vs prior", deltaCell(delta)) +
-    stat("Impressions", fmt(c.impressions)) +
-    stat("Clicks · CTR", `${fmt(c.clicks)} · ${pct(c.ctr)}`);
+  const renderStats = (history, containerId) => {
+    const c = aggregate(history, cur);
+    const p = aggregate(history, pri);
+    const delta = (c.position !== null && p.position !== null) ? +(c.position - p.position).toFixed(2) : null;
+    document.getElementById(containerId).innerHTML =
+      stat("Position", c.position !== null ? c.position.toFixed(1) : "—") +
+      stat("Δ vs prior", deltaCell(delta)) +
+      stat("Impressions", fmt(c.impressions)) +
+      stat("Clicks · CTR", `${fmt(c.clicks)} · ${pct(c.ctr)}`);
+  };
+  renderStats(r.history || [], "modal-stats");
+  renderStats(r.target_history || [], "modal-stats-target");
 
   renderModalChart();
   renderModalQueries(slug);
+  renderModalHistory();
 
-  // Full history table (latest first)
-  const hist = (r.history || []).slice().reverse();
+  document.getElementById("modal").classList.remove("hidden");
+  document.getElementById("modal").classList.add("flex");
+};
+
+function modalActiveHistory() {
+  if (!state.modalSlug) return [];
+  const r = RANKINGS.find(x => x.slug === state.modalSlug);
+  if (!r) return [];
+  return (state.modalSource === "target" ? r.target_history : r.history) || [];
+}
+
+function renderModalChart() {
+  if (!state.modalSlug) return;
+  document.getElementById("modal-chart").innerHTML = lineChart(modalActiveHistory(), state.modalMetric);
+  document.querySelectorAll(".metric-btn").forEach(b => {
+    b.classList.toggle("seg-btn-active", b.dataset.metric === state.modalMetric);
+  });
+  document.querySelectorAll(".source-btn").forEach(b => {
+    b.classList.toggle("seg-btn-active", b.dataset.source === state.modalSource);
+  });
+}
+
+function renderModalHistory() {
+  const hist = modalActiveHistory().slice().reverse();
   document.getElementById("modal-history").innerHTML = hist.length ? hist.map(h => `
     <tr><td class="py-1 font-mono text-slate-500">${h.w}</td>
         <td class="py-1 text-right font-mono">${h.p !== null ? h.p.toFixed(1) : "—"}</td>
@@ -1001,18 +1048,6 @@ window.openModal = function(slug) {
         <td class="py-1 text-right font-mono">${fmt(h.c)}</td>
         <td class="py-1 text-right font-mono">${pct(h.ctr)}</td></tr>
   `).join("") : `<tr><td colspan="5" class="py-4 text-center text-slate-400 italic">no history</td></tr>`;
-
-  document.getElementById("modal").classList.remove("hidden");
-  document.getElementById("modal").classList.add("flex");
-};
-
-function renderModalChart() {
-  if (!state.modalSlug) return;
-  const r = RANKINGS.find(x => x.slug === state.modalSlug);
-  document.getElementById("modal-chart").innerHTML = lineChart(r.history, state.modalMetric);
-  document.querySelectorAll(".metric-btn").forEach(b => {
-    b.classList.toggle("seg-btn-active", b.dataset.metric === state.modalMetric);
-  });
 }
 
 function renderModalQueries(slug) {
@@ -1078,6 +1113,13 @@ document.getElementById("modal").addEventListener("click", e => {
   if (e.target.id === "modal") closeModal();
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.querySelectorAll(".source-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    state.modalSource = b.dataset.source;
+    renderModalChart();
+    renderModalHistory();
+  });
+});
 document.querySelectorAll(".metric-btn").forEach(b => {
   b.addEventListener("click", () => { state.modalMetric = b.dataset.metric; renderModalChart(); });
 });
