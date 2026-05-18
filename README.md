@@ -47,7 +47,9 @@ Runs only when the Mac is awake. If your Mac is asleep at the trigger time, laun
 
 - `index.html` — single-page dashboard. All comparisons (current vs prior window) computed in JS from the weekly history.
 - `data.js` — meta only: `{history_start, history_end, all_weeks, generated_at, post_count}`.
-- `rankings.js` — per-post metadata + `history[]` array of `{w, p, i, c, ctr}`.
+- `rankings.js` — per-post metadata + URL-level `history[]` and per-target-keyword `target_history[]` arrays of `{w, p, i, c, ctr}`.
+- `queries.js` — top ~25 queries per post by impressions (drives the Queries tab and target-keyword auto-fallback).
+- `target_keywords.json` — `{slug: "target keyword"}`. POS on the Rank Tracker tab uses the GSC position for this exact query. Slugs not listed fall back to the top query by impressions. Edit and re-run `./refresh.sh` to apply.
 - `update-data.py` — refresh script.
 - `_posts.json` — gitignored intermediate.
 

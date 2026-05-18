@@ -53,6 +53,7 @@ DATA_JS = HERE / "data.js"
 RANKINGS_JS = HERE / "rankings.js"
 QUERIES_JS = HERE / "queries.js"
 INDEX_HTML = HERE / "index.html"
+TARGET_KEYWORDS_JSON = HERE / "target_keywords.json"
 
 # How many top queries to keep per post (by total annual impressions).
 QUERIES_TOP_N = 25
@@ -200,6 +201,52 @@ def slug_from_url(url: str) -> str:
     return url.replace(BLOG_PREFIX, "").rstrip("/")
 
 
+def load_target_keywords() -> dict[str, str]:
+    """Slug -> target keyword. Ignores keys starting with '_' (e.g. _comment)."""
+    if not TARGET_KEYWORDS_JSON.exists():
+        return {}
+    raw = json.loads(TARGET_KEYWORDS_JSON.read_text())
+    return {k: v for k, v in raw.items() if not k.startswith("_") and isinstance(v, str)}
+
+
+def history_from_wkmap(wkmap: dict) -> list[dict]:
+    """Convert a {week: {pos_imp_sum, imp, clicks}} dict to sorted history entries."""
+    out = []
+    for wk in sorted(wkmap.keys()):
+        b = wkmap[wk]
+        pos = b["pos_imp_sum"] / b["imp"] if b["imp"] > 0 else None
+        ctr = b["clicks"] / b["imp"] if b["imp"] > 0 else 0
+        out.append({
+            "w": wk,
+            "p": round(pos, 2) if pos is not None else None,
+            "i": b["imp"],
+            "c": b["clicks"],
+            "ctr": round(ctr, 4),
+        })
+    return out
+
+
+def resolve_target(slug: str, target_keywords: dict, slug_qhist: dict) -> tuple[str | None, str, list[dict]]:
+    """Return (target_keyword, source, target_history) for a slug.
+
+    source = "manual" if defined in target_keywords.json (even when GSC has no data
+    for that query — the empty history is the honest signal).
+    source = "auto" when we fall back to the top query by total impressions.
+    source = "none" when there's no query data at all to fall back to.
+    """
+    if slug in target_keywords:
+        kw = target_keywords[slug]
+        wkmap = slug_qhist.get(kw, {})
+        return kw, "manual", history_from_wkmap(wkmap)
+    if not slug_qhist:
+        return None, "none", []
+    best_kw = max(
+        slug_qhist.keys(),
+        key=lambda q: sum(b["imp"] for b in slug_qhist[q].values()),
+    )
+    return best_kw, "auto", history_from_wkmap(slug_qhist[best_kw])
+
+
 def main():
     print("Extracting posts from Astro repo…")
     posts = extract_posts()
@@ -215,6 +262,9 @@ def main():
 
     regex = build_slug_regex(slugs)
     svc = gsc()
+
+    target_keywords = load_target_keywords()
+    print(f"  {len(target_keywords)} manual target keywords loaded from target_keywords.json")
 
     print("Querying daily-by-page (paginated)…")
     rows = query_daily_paginated(svc, start.isoformat(), end.isoformat(), regex)
@@ -237,23 +287,39 @@ def main():
         b["imp"] += r["impressions"]
         b["clicks"] += r["clicks"]
 
+    # ─── Query-level pull ──────────────────────────────────────────────
+    # Pulled before building records so each record can carry a target-keyword
+    # history aggregated from the (slug, query) breakdown.
+    print("Querying date+page+query (paginated)…")
+    qrows = query_with_queries_paginated(svc, start.isoformat(), end.isoformat(), regex)
+
+    # Bucket into ISO weeks per (slug, query). Anonymized queries come back as ""
+    # in the GSC response — skip those.
+    qhist: dict[str, dict[str, dict[str, dict]]] = {}
+    for r in qrows:
+        date_str, url, q = r["keys"]
+        if not q:
+            continue
+        s = slug_from_url(url)
+        d = datetime.strptime(date_str, "%Y-%m-%d").date()
+        iso = d.isocalendar()
+        wk = f"{iso[0]}-W{iso[1]:02d}"
+        qhist.setdefault(s, {}).setdefault(q, {}).setdefault(
+            wk, {"pos_imp_sum": 0.0, "imp": 0, "clicks": 0}
+        )
+        b = qhist[s][q][wk]
+        b["pos_imp_sum"] += r["position"] * r["impressions"]
+        b["imp"] += r["impressions"]
+        b["clicks"] += r["clicks"]
+
     # ─── Build records ─────────────────────────────────────────────────
     records = []
     for p in posts:
         s = p["slug"]
-        history = []
-        if s in hist_by_slug:
-            for wk in sorted(hist_by_slug[s].keys()):
-                b = hist_by_slug[s][wk]
-                pos = b["pos_imp_sum"] / b["imp"] if b["imp"] > 0 else None
-                ctr = b["clicks"] / b["imp"] if b["imp"] > 0 else 0
-                history.append({
-                    "w": wk,
-                    "p": round(pos, 2) if pos is not None else None,
-                    "i": b["imp"],
-                    "c": b["clicks"],
-                    "ctr": round(ctr, 4),
-                })
+        history = history_from_wkmap(hist_by_slug.get(s, {}))
+        target_kw, target_source, target_history = resolve_target(
+            s, target_keywords, qhist.get(s, {})
+        )
         records.append({
             "title": p["title"],
             "slug": s,
@@ -262,6 +328,9 @@ def main():
             "updated": p["updated"],
             "tags": p["tags"],
             "history": history,
+            "target_keyword": target_kw,
+            "target_source": target_source,
+            "target_history": target_history,
         })
 
     # ─── Write JS files ────────────────────────────────────────────────
@@ -285,29 +354,6 @@ def main():
         "// Auto-generated. Do not edit.\n"
         f"const RANKINGS = {json.dumps(records, indent=2, ensure_ascii=False)};\n"
     )
-
-    # ─── Query-level pull ──────────────────────────────────────────────
-    print("Querying date+page+query (paginated)…")
-    qrows = query_with_queries_paginated(svc, start.isoformat(), end.isoformat(), regex)
-
-    # Bucket into ISO weeks per (slug, query). GSC returns the query string
-    # as the third key; anonymized queries come back as "" — skip those.
-    qhist: dict[str, dict[str, dict[str, dict]]] = {}
-    for r in qrows:
-        date_str, url, q = r["keys"]
-        if not q:
-            continue
-        s = slug_from_url(url)
-        d = datetime.strptime(date_str, "%Y-%m-%d").date()
-        iso = d.isocalendar()
-        wk = f"{iso[0]}-W{iso[1]:02d}"
-        qhist.setdefault(s, {}).setdefault(q, {}).setdefault(
-            wk, {"pos_imp_sum": 0.0, "imp": 0, "clicks": 0}
-        )
-        b = qhist[s][q][wk]
-        b["pos_imp_sum"] += r["position"] * r["impressions"]
-        b["imp"] += r["impressions"]
-        b["clicks"] += r["clicks"]
 
     # Build QUERIES = { slug: [{q, ti, tc, h: [...]}, ...] } keeping top N per slug.
     queries_out: dict[str, list[dict]] = {}

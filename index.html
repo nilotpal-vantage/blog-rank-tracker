@@ -300,9 +300,9 @@
   </div>
 </div>
 
-<script src="data.js?v=1244faab9d"></script>
-<script src="rankings.js?v=1244faab9d"></script>
-<script src="queries.js?v=1244faab9d"></script>
+<script src="data.js?v=6567a9e6c1"></script>
+<script src="rankings.js?v=6567a9e6c1"></script>
+<script src="queries.js?v=6567a9e6c1"></script>
 <script>
 // ─── State ──────────────────────────────────────────────────────────────
 const state = {
@@ -397,6 +397,41 @@ function computedRanks() {
       date: r.date,
       updated: r.updated,
       history: r.history,
+    };
+  });
+}
+
+// Rank Tracker uses target-keyword history (per-post primary keyword) instead of
+// URL-level aggregates, so POS reflects rank for the keyword the post is meant to
+// rank for — not the impression-weighted average across every long-tail variant.
+function computedTrackerRanks() {
+  const cur = currentWeeks();
+  const pri = priorWeeks();
+  return RANKINGS.map(r => {
+    const hist = r.target_history || [];
+    const c = aggregate(hist, cur);
+    const p = aggregate(hist, pri);
+    const delta = (c.position !== null && p.position !== null) ? +(c.position - p.position).toFixed(2) : null;
+    return {
+      title: r.title,
+      slug: r.slug,
+      url: r.url,
+      tags: r.tags,
+      target_keyword: r.target_keyword,
+      target_source: r.target_source,
+      position: c.position,
+      prev_position: p.position,
+      delta,
+      impressions: c.impressions,
+      prev_impressions: p.impressions,
+      clicks: c.clicks,
+      prev_clicks: p.clicks,
+      ctr: c.ctr,
+      bucket: bucketOf(c.position),
+      prev_bucket: bucketOf(p.position),
+      date: r.date,
+      updated: r.updated,
+      history: hist,
     };
   });
 }
@@ -497,8 +532,18 @@ function applyFilters(rows) {
   return out;
 }
 
+function trackerKeywordLabel(r) {
+  if (!r.target_keyword) {
+    return `<span class="text-xs text-amber-600 mt-0.5 italic">no target keyword · no GSC queries</span>`;
+  }
+  const badge = r.target_source === "manual"
+    ? `<span class="text-[10px] uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1 ml-1">target</span>`
+    : `<span class="text-[10px] uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 rounded px-1 ml-1" title="No target_keywords.json entry — falling back to top query by impressions">top query</span>`;
+  return `<div class="text-xs text-slate-500 mt-0.5">↳ <span class="font-medium">${r.target_keyword}</span>${badge}</div>`;
+}
+
 function renderTracker() {
-  const ranks = computedRanks();
+  const ranks = computedTrackerRanks();
   const rows = applyFilters(ranks);
   const cur = currentWeeks();
   document.getElementById("row-count").textContent = rows.length;
@@ -507,6 +552,7 @@ function renderTracker() {
       <td class="px-4 py-3 max-w-md">
         <div class="font-medium text-slate-900 leading-snug">${r.title}</div>
         <div class="text-xs text-slate-400 font-mono mt-0.5">${r.slug}</div>
+        ${trackerKeywordLabel(r)}
       </td>
       <td class="px-3 py-3 text-right font-mono">${r.position !== null ? r.position.toFixed(1) : "—"}</td>
       <td class="px-3 py-3 text-right font-mono">${deltaCell(r.delta)}</td>

@@ -1,0 +1,11 @@
+{
+  "_comment": "slug -> target keyword. POS in the Rank Tracker tab will reflect this exact query's GSC position. Slugs not listed here fall back to the top query by impressions. Edit and re-run ./refresh.sh.",
+  "becoming-employer-of-choice": "becoming employer of choice",
+  "corporate-diwali-gifts-for-employees": "corporate diwali gifts for employees",
+  "employee-performance-tracking": "employee performance tracking",
+  "employee-recognition-ideas-for-manufacturing": "employee recognition ideas for manufacturing",
+  "employee-recognition-strategy": "employee recognition strategy",
+  "employee-relationship-management": "employee relationship management",
+  "giving-recognition-at-work": "giving recognition at work",
+  "recognition-vs-appreciation": "recognition vs appreciation"
+}
