@@ -77,6 +77,7 @@
     <button data-tab="ctr"       class="tab py-3 border-b-2 tab-inactive">CTR Fixes</button>
     <button data-tab="queries"   class="tab py-3 border-b-2 tab-inactive">Queries</button>
     <button data-tab="recent"    class="tab py-3 border-b-2 tab-inactive">Recent Publishes</button>
+    <button data-tab="help"      class="tab py-3 border-b-2 tab-inactive ml-auto">Help</button>
   </div>
 </nav>
 
@@ -243,6 +244,165 @@
         </p>
       </div>
       <div id="recent-list" class="text-sm"></div>
+    </div>
+  </section>
+
+  <section id="panel-help" class="hidden">
+    <div class="bg-white rounded-lg border border-slate-200 p-6 prose prose-slate max-w-none text-sm leading-relaxed">
+      <h2 class="text-lg font-semibold text-slate-900 mt-0 mb-2">How to use this dashboard</h2>
+      <p class="text-slate-600">
+        Weekly Google Search Console data for every Nilotpal-authored Vantage Circle blog post,
+        going back 52 weeks. Auto-refreshes every Monday at 10 AM IST; manual refresh via <code>./refresh.sh</code>.
+      </p>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">The two lenses</h3>
+      <p>Every post is measured two ways. The disagreement between them is the most useful signal.</p>
+      <div class="grid md:grid-cols-2 gap-4 my-3">
+        <div class="border border-slate-200 rounded p-3 bg-slate-50">
+          <div class="font-semibold text-slate-900">URL-level <span class="text-xs font-normal text-slate-500">(all queries)</span></div>
+          <p class="mt-1 mb-0 text-slate-600">
+            Impression-weighted avg position across <em>every</em> query GSC saw the page surface for.
+            Answers: "how is this URL doing overall?"
+          </p>
+        </div>
+        <div class="border border-slate-200 rounded p-3 bg-slate-50">
+          <div class="font-semibold text-slate-900">Target keyword</div>
+          <p class="mt-1 mb-0 text-slate-600">
+            Position for one specific query — the one the post was written to win.
+            Defined per slug in <code>target_keywords.json</code>.
+            Answers: "is this page ranking for what I wrote it for?"
+          </p>
+        </div>
+      </div>
+      <p class="text-slate-600">
+        <strong>Example:</strong> A page can show URL-level pos 13.5 (page 2) but target pos 16.1 — meaning it's getting traffic from a <em>different</em> query than its slug suggests.
+      </p>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Top controls</h3>
+      <ul class="text-slate-700">
+        <li><strong>Window selector</strong> (4 / 12 / 26 / 52 weeks or Custom) — sets the "current" period. All Δ comparisons are vs the equally-sized window immediately before it.</li>
+        <li><strong>Summary CSV / Weekly CSV</strong> — exports the current view (Summary) or all 52 weeks of history per slug (Weekly).</li>
+      </ul>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Tabs at a glance</h3>
+      <div class="overflow-x-auto">
+        <table class="text-xs border border-slate-200 my-2">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="text-left px-3 py-2 font-semibold">Tab</th>
+              <th class="text-left px-3 py-2 font-semibold">Lens</th>
+              <th class="text-left px-3 py-2 font-semibold">What it answers</th>
+              <th class="text-left px-3 py-2 font-semibold">Look for</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-slate-200"><td class="px-3 py-2 font-medium">Overview</td><td class="px-3 py-2">URL-level</td><td class="px-3 py-2">Portfolio snapshot vs prior window</td><td class="px-3 py-2">Net direction; how many fell off page 1</td></tr>
+            <tr class="border-t border-slate-200"><td class="px-3 py-2 font-medium">Rank Tracker</td><td class="px-3 py-2">Target keyword</td><td class="px-3 py-2">"Where am I ranking for my actual target?"</td><td class="px-3 py-2">Red Δ; "No data" rows; mismatched targets</td></tr>
+            <tr class="border-t border-slate-200"><td class="px-3 py-2 font-medium">Movers</td><td class="px-3 py-2">URL-level</td><td class="px-3 py-2">Biggest week-over-week shifts</td><td class="px-3 py-2">Fell-off-Page-1 first; clusters of similar moves</td></tr>
+            <tr class="border-t border-slate-200"><td class="px-3 py-2 font-medium">Striking Distance</td><td class="px-3 py-2">URL-level</td><td class="px-3 py-2">Pages 11–20 with traffic — push to page 1</td><td class="px-3 py-2">Highest impressions = biggest prize</td></tr>
+            <tr class="border-t border-slate-200"><td class="px-3 py-2 font-medium">CTR Fixes</td><td class="px-3 py-2">URL-level</td><td class="px-3 py-2">Page-1 posts losing clicks (low CTR)</td><td class="px-3 py-2">Rewrite title/meta, not full content</td></tr>
+            <tr class="border-t border-slate-200"><td class="px-3 py-2 font-medium">Queries</td><td class="px-3 py-2">Per-query</td><td class="px-3 py-2">Specific queries each page ranks for</td><td class="px-3 py-2">Surprise winners; striking-distance queries; wrong-target signals</td></tr>
+            <tr class="border-t border-slate-200"><td class="px-3 py-2 font-medium">Recent Publishes</td><td class="px-3 py-2">URL-level</td><td class="px-3 py-2">How new/updated posts are climbing</td><td class="px-3 py-2">Posts that should be ranking but aren't</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Reading a row in the Rank Tracker</h3>
+      <ul class="text-slate-700">
+        <li><strong>Title + slug</strong></li>
+        <li>↳ <strong>Target keyword</strong> with a badge:
+          <ul>
+            <li><span class="text-[10px] uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1">target</span> — you defined it manually in <code>target_keywords.json</code>. Trust this row.</li>
+            <li><span class="text-[10px] uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 rounded px-1">top query</span> — auto-fallback to the highest-impression query (no manual entry). May or may not be the true SEO target.</li>
+          </ul>
+        </li>
+        <li><strong>POS</strong> — avg position for the target keyword in the current window. "—" means no impressions for that exact query.</li>
+        <li><strong>Δ</strong> — change vs prior window. <span class="delta-up font-semibold">▲ green</span> = rank improved (number got smaller); <span class="delta-down font-semibold">▼ red</span> = rank worsened.</li>
+        <li><strong>Bucket</strong> — Page 1 (≤10) / Page 2 (10.01–20) / Page 3+ (>20) / No data.</li>
+        <li><strong>Trend</strong> — sparkline of POS over the current window. First → last position printed below.</li>
+      </ul>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Inside the post-detail modal</h3>
+      <p>Click any row to open the modal. Layout:</p>
+      <ul class="text-slate-700">
+        <li><strong>Two stat rows side by side:</strong> URL-level (top) and Target keyword (bottom). Both show Position / Δ / Impressions / Clicks·CTR for the current window.</li>
+        <li><strong>Trend chart</strong> — weekly time series with shaded current/prior windows. Two toggles:
+          <ul>
+            <li><strong>URL / Target</strong> — which data source to chart</li>
+            <li><strong>Position / Impressions / Clicks / CTR</strong> — which metric to show</li>
+          </ul>
+        </li>
+        <li><strong>Top Queries</strong> — every query the page ranks for in the window, sorted by impressions. This is where you spot queries the page is winning for that aren't your target.</li>
+        <li><strong>Weekly history table</strong> — all 52 weeks, respects the URL/Target toggle.</li>
+      </ul>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">What to look for (workflows)</h3>
+
+      <div class="border border-slate-200 rounded p-3 my-2 bg-slate-50">
+        <div class="font-semibold text-slate-900 mb-1">Weekly check-in · 5 min</div>
+        <ol class="my-0 text-slate-700">
+          <li>Overview tab → read the delta cards. Any metric down &gt;10%?</li>
+          <li>Movers tab → "Fell off Page 1" section first. Each post here is a real loss.</li>
+          <li>Rank Tracker → click the <strong>Δ column header twice</strong> to sort by biggest drop. Top of list is what to investigate.</li>
+        </ol>
+      </div>
+
+      <div class="border border-slate-200 rounded p-3 my-2 bg-slate-50">
+        <div class="font-semibold text-slate-900 mb-1">Monthly optimization run · 30 min</div>
+        <ol class="my-0 text-slate-700">
+          <li>Striking Distance → sort by impressions, pick top 3, queue for content/SERP-feature improvements.</li>
+          <li>CTR Fixes → top 3, rewrite titles and meta descriptions (not full content).</li>
+          <li>Queries tab → "Striking distance only" checkbox → find query-level wins on pages you already own.</li>
+        </ol>
+      </div>
+
+      <div class="border border-slate-200 rounded p-3 my-2 bg-slate-50">
+        <div class="font-semibold text-slate-900 mb-1">Audit target keywords · 10 min</div>
+        <ol class="my-0 text-slate-700">
+          <li>Rank Tracker, look for grey <span class="text-[10px] uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 rounded px-1">top query</span> badges — those are the dashboard's guesses. Confirm or override.</li>
+          <li>For green <span class="text-[10px] uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1">target</span> rows showing "No data": click in, scan Top Queries — is the page ranking for something else? If yes, your target may be wrong.</li>
+          <li>Edit <code>target_keywords.json</code>, run <code>./refresh.sh</code>.</li>
+        </ol>
+      </div>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Reading patterns</h3>
+      <ul class="text-slate-700">
+        <li><strong>URL-level POS ≪ target POS</strong> → page ranks for non-target queries. Consider changing the target.</li>
+        <li><strong>"No data" target + active URL traffic</strong> → page is alive but not ranking for the intended keyword. Content/intent mismatch, or wrong target.</li>
+        <li><strong>Gradual decline on trend chart</strong> → SEO/content erosion. Refresh, update internal links, add depth.</li>
+        <li><strong>Sudden drop on a specific week</strong> → algorithm update, technical issue (broken redirect, deindexing), or a competitor moved in. Check the SERP and search algo update calendars for that week.</li>
+        <li><strong>High impressions + low CTR + page 1</strong> → title/meta problem, or competing for the wrong intent (e.g. ranking for a navigational query you can't satisfy).</li>
+        <li><strong>Striking-distance + climbing trend</strong> → already moving up; small push could land it on page 1.</li>
+      </ul>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Glossary</h3>
+      <ul class="text-slate-700">
+        <li><strong>Position</strong> — GSC's avg position. The rank the page held <em>when it appeared</em> in a SERP, averaged across the window weighted by impressions. <em>Not the same as a single live SERP check</em> — GSC averages across geos, devices, query variants, personalization.</li>
+        <li><strong>Impressions</strong> — number of times the page appeared on a SERP (any depth).</li>
+        <li><strong>Clicks</strong> — clicks from SERP to the page.</li>
+        <li><strong>CTR</strong> — clicks ÷ impressions.</li>
+        <li><strong>Δ vs prior</strong> — current window minus prior window. Inverted for display: lower position number = better rank, so a negative Δ is shown as a green ▲.</li>
+        <li><strong>Bucket</strong> — Page 1 (avg pos ≤ 10), Page 2 (10.01–20), Page 3+ (&gt;20), No data (zero impressions in window).</li>
+      </ul>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Limitations</h3>
+      <ul class="text-slate-700">
+        <li><strong>Avg position ≠ live rank.</strong> Manual SERP checks will often disagree with GSC, especially for pages with few impressions.</li>
+        <li><strong>52-week ceiling.</strong> History older than 52 weeks isn't stored.</li>
+        <li><strong>Exact-string keyword match.</strong> "becoming employer of choice" won't match "how to become an employer of choice". A page can show "No data" for its target while still ranking for variants — check the Top Queries inside the modal.</li>
+        <li><strong>Drafts excluded.</strong> Slugs ending in <code>-draft</code> are skipped.</li>
+        <li><strong>One author.</strong> Filtered to Astro frontmatter <code>author</code> containing "nilotpal".</li>
+        <li><strong>2-day GSC lag.</strong> The most recent ~2 days of data are not yet finalized and aren't pulled.</li>
+      </ul>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Files in the repo</h3>
+      <ul class="text-slate-700">
+        <li><code>target_keywords.json</code> — slug → primary keyword mapping. Edit this to fix wrong targets, then re-run refresh.</li>
+        <li><code>rankings.js</code> — auto-generated per-post data (URL-level + target-level history).</li>
+        <li><code>queries.js</code> — auto-generated per-query data (top ~25 per post).</li>
+        <li><code>update-data.py</code> — refresh script. Pulls GSC, regenerates the JS files.</li>
+        <li><code>refresh.sh</code> — runs <code>update-data.py</code>, commits, pushes. Use this to apply changes to the live dashboard.</li>
+      </ul>
     </div>
   </section>
 
@@ -1130,7 +1290,7 @@ function switchTab(name) {
     t.classList.toggle("tab-active", t.dataset.tab === name);
     t.classList.toggle("tab-inactive", t.dataset.tab !== name);
   });
-  ["overview", "tracker", "movers", "striking", "ctr", "queries", "recent"].forEach(p => {
+  ["overview", "tracker", "movers", "striking", "ctr", "queries", "recent", "help"].forEach(p => {
     document.getElementById(`panel-${p}`).classList.toggle("hidden", p !== name);
   });
   if (name === "overview") renderOverview();
