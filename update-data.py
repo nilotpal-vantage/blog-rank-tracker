@@ -18,6 +18,8 @@ Usage:
 Auth comes from ../../gsc-mcp/gsc_tokens.db (existing OAuth stored creds).
 """
 
+from __future__ import annotations
+
 import hashlib
 import json
 import re
