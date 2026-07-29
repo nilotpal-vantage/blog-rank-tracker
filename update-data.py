@@ -146,6 +146,12 @@ def build_slug_regex(slugs: list[str]) -> str:
 
 PAGE_LIMIT = 25000  # GSC API max
 
+# These pulls run to 15+ sequential requests and several hundred thousand rows, so
+# a transient reset partway through is routine. The client retries 5xx/rate-limit
+# responses and dropped sockets with exponential backoff, but only when asked —
+# it defaults to zero retries, which let one blip abort an entire refresh.
+API_RETRIES = 5
+
 
 def query_daily_paginated(service, start: str, end: str, regex: str) -> list[dict]:
     """Pull date+page rows, paginating to handle >25k results."""
@@ -163,7 +169,9 @@ def query_daily_paginated(service, start: str, end: str, regex: str) -> list[dic
             "startRow": start_row,
             "dataState": "final",
         }
-        resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute()
+        resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute(
+            num_retries=API_RETRIES
+        )
         chunk = resp.get("rows", [])
         rows.extend(chunk)
         print(f"  page {start_row // PAGE_LIMIT + 1}: +{len(chunk)} rows (total {len(rows)})")
@@ -189,7 +197,9 @@ def query_with_queries_paginated(service, start: str, end: str, regex: str) -> l
             "startRow": start_row,
             "dataState": "final",
         }
-        resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute()
+        resp = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute(
+            num_retries=API_RETRIES
+        )
         chunk = resp.get("rows", [])
         rows.extend(chunk)
         print(f"  page {start_row // PAGE_LIMIT + 1}: +{len(chunk)} rows (total {len(rows)})")
