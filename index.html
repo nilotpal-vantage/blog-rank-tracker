@@ -7,15 +7,87 @@
 <title>Nilotpal's Blog Rank Tracker</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
+  /* ── Data-viz tokens ──────────────────────────────────────────────────
+     Validated with the dataviz validator against the white card surface.
+     Rank buckets are an ordered polarity scale (page 1 ↔ page 3+), so they
+     use a DIVERGING pair — blue and red poles with a neutral gray midpoint —
+     rather than green/amber/red, which fails the lightness band on amber and
+     puts the two ends on the classic red/green confusion axis.
+     Poles pass every check in both modes: CVD ΔE 23.8 light / 25.7 dark. */
+  :root {
+    --viz-surface:  #ffffff;
+    --ink-primary:  #0b0b0b;
+    --ink-secondary:#52514e;
+    --ink-muted:    #898781;
+    --viz-grid:     #e1e0d9;
+    --viz-baseline: #c3c2b7;
+
+    --bucket-p1: #2a78d6;   /* good pole */
+    --bucket-p2: #898781;   /* neutral midpoint — gray by design */
+    --bucket-p3: #d03b3b;   /* bad pole */
+    --bucket-nd: #e1e0d9;
+
+    --seq-100: #cde2fb;
+    --seq-250: #86b6ef;
+    --seq-450: #2a78d6;
+    --seq-600: #184f95;
+
+    --delta-good: #006300;
+    --delta-bad:  #d03b3b;
+  }
+
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+  /* ── Figures ──────────────────────────────────────────────────────────
+     Proportional figures on display numbers; tabular only where digits must
+     line up vertically (table columns, axis ticks). */
+  .hero-figure { font-size: 52px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; color: var(--ink-primary); }
+  .stat-value  { font-size: 26px; line-height: 1.1; font-weight: 600; color: var(--ink-primary); }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* ── Chart chrome ─────────────────────────────────────────────────────── */
+  .viz-card { background: var(--viz-surface); border: 1px solid #e2e8f0; border-radius: 10px; }
+  .viz-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--ink-secondary); }
+  .viz-key { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .viz-note { font-size: 11px; color: var(--ink-muted); }
+
+  /* Shared hover tooltip. Tooltips enhance — every value is also in the
+     table view behind the Table toggle, so nothing is gated behind hover. */
+  #viz-tip {
+    position: fixed; pointer-events: none; z-index: 60; opacity: 0;
+    transition: opacity .08s linear;
+    background: rgba(15,23,42,.96); color: #fff; font-size: 12px; line-height: 1.45;
+    padding: 7px 10px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.18);
+    max-width: 260px;
+  }
+  #viz-tip.on { opacity: 1; }
+  #viz-tip .tip-h { font-weight: 600; margin-bottom: 2px; }
+  #viz-tip .tip-r { display: flex; justify-content: space-between; gap: 14px; }
+  #viz-tip .tip-k { color: #cbd5e1; }
+
+  /* Magnitude bar behind a table figure — sequential, one hue. */
+  /* Anchored to the right so the bar sits under its own right-aligned figure
+     rather than drifting to the far side of the cell. 4px rounded data-end. */
+  .cellbar { position: relative; min-width: 62px; }
+  .cellbar > .cellbar-fill {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    height: 16px; border-radius: 4px 0 0 4px; background: var(--seq-100);
+  }
+  .cellbar > .cellbar-txt { position: relative; padding-right: 3px; }
   .tab-active { color: #0f172a; border-bottom-color: #0f172a; }
   .tab-inactive { color: #64748b; border-bottom-color: transparent; }
-  .bucket-page1 { background: #dcfce7; color: #166534; }
-  .bucket-page2 { background: #fef3c7; color: #92400e; }
-  .bucket-page3 { background: #fee2e2; color: #991b1b; }
+  /* Bucket chips carry the SAME diverging encoding as the charts — page 1 is
+     blue everywhere, page 3+ red everywhere. Colour follows the entity. Tinted
+     surfaces with dark ink so the text clears contrast; the chip label always
+     names the bucket, so colour never carries it alone. */
+  .bucket-page1 { background: #e3eefc; color: #16437e; }
+  .bucket-page2 { background: #efeeeb; color: #4b4a47; }
+  .bucket-page3 { background: #fbe6e6; color: #8f2020; }
   .bucket-nodata { background: #f1f5f9; color: #64748b; }
-  .delta-up { color: #16a34a; }
-  .delta-down { color: #dc2626; }
+  /* Delta arrows encode direction of change, a different job from rank bucket —
+     conventional green/red, always paired with an arrow glyph. */
+  .delta-up { color: var(--delta-good); }
+  .delta-down { color: var(--delta-bad); }
   .delta-flat { color: #94a3b8; }
   table tbody tr { cursor: pointer; }
   table tbody tr:hover { background: #f8fafc; }
@@ -92,32 +164,60 @@
   <!-- Data-integrity alerts: stale refresh, weeks the active source doesn't cover. -->
   <div id="alerts" class="space-y-2 mb-4"></div>
 
-  <section id="panel-overview" class="hidden">
-    <div id="portfolio-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3"></div>
-    <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6"></div>
+  <section id="panel-overview" class="hidden space-y-5">
 
-    <div class="bg-white rounded-lg border border-slate-200 p-5 mb-6">
+    <!-- Headline. One hero figure per view, a plain-language read of it, then
+         supporting tiles — rather than seven equal-weight count tiles. -->
+    <div class="viz-card p-6">
+      <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-slate-500">Total impressions</div>
+          <div id="hero-figure" class="hero-figure mt-1">—</div>
+          <div id="hero-delta" class="mt-2 text-sm"></div>
+          <p id="hero-read" class="text-sm text-slate-600 mt-3 leading-relaxed"></p>
+        </div>
+        <div id="hero-tiles" class="grid grid-cols-2 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- Rank buckets are an ordered polarity scale, so they get the diverging
+         form: centred on page 2, good extends left, bad extends right. -->
+    <div class="viz-card p-5">
+      <div class="flex items-baseline justify-between gap-3 flex-wrap">
+        <h3 class="text-sm font-semibold text-slate-700">Where the portfolio ranks</h3>
+        <div id="dist-legend" class="viz-legend"></div>
+      </div>
+      <p class="viz-note mt-1 mb-4">Centred on page 2 — page 1 extends left, page 3+ extends right. Further left is healthier.</p>
+      <div id="dist-chart"></div>
+    </div>
+
+    <!-- The absolute long view. Every other tab is relative to the prior
+         window, which structurally cannot separate a blip from a trend. -->
+    <div class="viz-card p-5">
       <div class="flex items-baseline justify-between gap-3 flex-wrap mb-1">
-        <h3 class="text-sm font-semibold text-slate-700">Portfolio history — every tracked week</h3>
-        <div class="flex gap-1">
+        <h3 class="text-sm font-semibold text-slate-700">The long view — every tracked week</h3>
+        <div class="flex gap-1 items-center">
           <button data-pmetric="i" class="pmetric-btn seg-btn">Impressions</button>
           <button data-pmetric="c" class="pmetric-btn seg-btn">Clicks</button>
           <button data-pmetric="p" class="pmetric-btn seg-btn">Avg position</button>
+          <button data-pmetric="p1" class="pmetric-btn seg-btn">Posts on page 1</button>
+          <button id="pf-table-toggle" class="seg-btn ml-2">Table</button>
         </div>
       </div>
-      <p class="text-xs text-slate-400 mb-3">
-        Absolute totals across all posts; the selected window is shaded blue, the prior window grey.
-        Every other view is relative to the previous window, which can't tell a blip from a trend.
-      </p>
+      <p id="portfolio-caption" class="viz-note mb-3"></p>
       <div id="portfolio-chart"></div>
+      <div id="portfolio-table" class="hidden mt-3 max-h-72 overflow-y-auto"></div>
     </div>
-    <div class="grid md:grid-cols-2 gap-6">
-      <div class="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Gainers</h3>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <div class="viz-card p-5">
+        <h3 class="text-sm font-semibold text-slate-700">Biggest improvements</h3>
+        <p class="viz-note mt-0.5 mb-3">Largest drop in position number vs the prior window.</p>
         <div id="overview-gainers" class="text-sm"></div>
       </div>
-      <div class="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Droppers</h3>
+      <div class="viz-card p-5">
+        <h3 class="text-sm font-semibold text-slate-700">Biggest declines</h3>
+        <p class="viz-note mt-0.5 mb-3">Largest rise in position number vs the prior window.</p>
         <div id="overview-droppers" class="text-sm"></div>
       </div>
     </div>
@@ -128,9 +228,9 @@
       <div class="flex flex-wrap items-center gap-3">
         <input id="search-box" type="search" placeholder="Search title or slug…" class="w-64">
         <div class="flex gap-1 text-xs">
-          <button data-filter="page1"   class="filter-btn px-3 py-1.5 rounded border bucket-page1 border-green-300">Page 1</button>
-          <button data-filter="page2"   class="filter-btn px-3 py-1.5 rounded border bucket-page2 border-amber-300">Page 2</button>
-          <button data-filter="page3+"  class="filter-btn px-3 py-1.5 rounded border bucket-page3 border-red-300">Page 3+</button>
+          <button data-filter="page1"   class="filter-btn px-3 py-1.5 rounded border bucket-page1 border-slate-200">Page 1</button>
+          <button data-filter="page2"   class="filter-btn px-3 py-1.5 rounded border bucket-page2 border-slate-200">Page 2</button>
+          <button data-filter="page3+"  class="filter-btn px-3 py-1.5 rounded border bucket-page3 border-slate-200">Page 3+</button>
           <button data-filter="no-data" class="filter-btn px-3 py-1.5 rounded border bucket-nodata border-slate-300">No data</button>
         </div>
         <label class="flex items-center gap-2 text-sm text-slate-600">
@@ -213,9 +313,9 @@
         <input id="queries-search" type="search" placeholder="Search query or post…" class="w-64">
         <select id="queries-post-filter" class="text-xs"></select>
         <div class="flex gap-1 text-xs">
-          <button data-qbucket="page1"   class="qbucket-btn px-3 py-1.5 rounded border bucket-page1 border-green-300">Page 1</button>
-          <button data-qbucket="page2"   class="qbucket-btn px-3 py-1.5 rounded border bucket-page2 border-amber-300">Page 2</button>
-          <button data-qbucket="page3+"  class="qbucket-btn px-3 py-1.5 rounded border bucket-page3 border-red-300">Page 3+</button>
+          <button data-qbucket="page1"   class="qbucket-btn px-3 py-1.5 rounded border bucket-page1 border-slate-200">Page 1</button>
+          <button data-qbucket="page2"   class="qbucket-btn px-3 py-1.5 rounded border bucket-page2 border-slate-200">Page 2</button>
+          <button data-qbucket="page3+"  class="qbucket-btn px-3 py-1.5 rounded border bucket-page3 border-slate-200">Page 3+</button>
         </div>
         <div class="flex items-center gap-1">
           <span class="text-xs text-slate-500">Min impr</span>
@@ -423,6 +523,16 @@
         <li><strong>Avg Position is impression-weighted.</strong> If a post loses its high-volume page-1 terms and only long-tail page-4 impressions remain, the average worsens even though nothing was demoted. The Overview tile shows the median across posts underneath as a cross-check, and the Rank Tracker tab avoids the problem entirely by using target-keyword rank.</li>
       </ul>
 
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Reading the visuals</h3>
+      <ul class="text-slate-700">
+        <li><strong>Colour means one thing throughout.</strong> Rank buckets are an ordered good-to-bad scale, so they use a diverging pair: <span class="bucket-page1 rounded px-1">page 1</span> blue, <span class="bucket-page2 rounded px-1">page 2</span> neutral grey, <span class="bucket-page3 rounded px-1">page 3+</span> red. Page 1 is blue in the chips, in the distribution bar and in the mover bars — never a different colour in a different place.</li>
+        <li><strong>Why not green/amber/red?</strong> It fails the contrast check on amber, and puts the two ends of the scale on the red/green axis that colour-blind readers can't separate. The blue↔red pair is distinguishable under every simulated form of colour vision. Every colour is also labelled in words, so nothing depends on seeing hue.</li>
+        <li><strong>"Where the portfolio ranks"</strong> is centred on page 2: page 1 grows left, page 3+ grows right. A healthy portfolio leans left. Both windows share one scale, so the two bars are directly comparable.</li>
+        <li><strong>"The long view"</strong> is the only absolute chart — every tracked week, not a comparison. The selected window is shaded blue, the prior window grey. Hover any week for its numbers, or hit <em>Table</em> for all of them at once.</li>
+        <li><strong>Bar length is always literal.</strong> Impression bars in the table are linearly proportional, so a post with a tenth the traffic gets a tenth the bar. Most rows show almost nothing because their volume genuinely is almost nothing.</li>
+        <li><strong>Green and red arrows</strong> mean direction of change, which is a different job from rank bucket. ▲ green = improved, ▼ red = declined, and the arrow is always there so colour never carries it alone.</li>
+      </ul>
+
       <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">When the dashboard warns you</h3>
       <ul class="text-slate-700">
         <li><strong>Amber "data is N days old"</strong> — the Monday refresh hasn't run in over 10 days. Run <code>./refresh.sh</code> and check <code>~/.blog-rank-tracker.log</code>. Turns red past 21 days.</li>
@@ -504,6 +614,8 @@
     </div>
   </div>
 </div>
+
+<div id="viz-tip" role="status" aria-live="polite"></div>
 
 <script src="data.js?v=748859811a"></script>
 <script src="rankings.js?v=748859811a"></script>
@@ -838,10 +950,24 @@ function trackerKeywordLabel(r) {
   return `<div class="text-xs text-slate-500 mt-0.5">↳ <span class="font-medium">${r.target_keyword}</span>${badge}</div>`;
 }
 
+// Sequential one-hue bar behind a figure so relative volume reads without
+// comparing digits. Length is LINEAR — a bar's length is its value, and a sqrt
+// or log fudge would make a 5-impression post look comparable to a 2,000 one.
+// These columns are power-law distributed, so most rows legitimately show almost
+// nothing; anything under 2% renders as empty rather than a sub-pixel sliver.
+function cellBar(value, max) {
+  const pctW = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+  return `<div class="cellbar">
+    ${pctW >= 2 ? `<div class="cellbar-fill" style="width:${pctW.toFixed(1)}%"></div>` : ""}
+    <span class="cellbar-txt tnum">${fmt(value)}</span>
+  </div>`;
+}
+
 function renderTracker() {
   const ranks = computedTrackerRanks();
   const rows = applyFilters(ranks);
   const cur = currentWeeks();
+  const maxImp = Math.max(1, ...rows.map(r => r.impressions || 0));
   document.getElementById("row-count").textContent = rows.length;
   document.getElementById("tracker-body").innerHTML = rows.map(r => `
     <tr data-slug="${r.slug}" class="border-b border-slate-100 last:border-b-0">
@@ -850,12 +976,12 @@ function renderTracker() {
         <div class="text-xs text-slate-400 font-mono mt-0.5">${r.slug}</div>
         ${trackerKeywordLabel(r)}
       </td>
-      <td class="px-3 py-3 text-right font-mono">${r.position !== null ? r.position.toFixed(1) : "—"}</td>
-      <td class="px-3 py-3 text-right font-mono">${deltaCell(r.delta)}</td>
-      <td class="px-3 py-3 text-right font-mono text-slate-500">${r.prev_position !== null ? r.prev_position.toFixed(1) : "—"}</td>
-      <td class="px-3 py-3 text-right font-mono">${fmt(r.impressions)}</td>
-      <td class="px-3 py-3 text-right font-mono">${fmt(r.clicks)}</td>
-      <td class="px-3 py-3 text-right font-mono">${pct(r.ctr)}</td>
+      <td class="px-3 py-3 text-right tnum">${r.position !== null ? r.position.toFixed(1) : "—"}</td>
+      <td class="px-3 py-3 text-right tnum">${deltaCell(r.delta)}</td>
+      <td class="px-3 py-3 text-right tnum text-slate-500">${r.prev_position !== null ? r.prev_position.toFixed(1) : "—"}</td>
+      <td class="px-3 py-3 text-right">${cellBar(r.impressions, maxImp)}</td>
+      <td class="px-3 py-3 text-right tnum">${fmt(r.clicks)}</td>
+      <td class="px-3 py-3 text-right tnum">${pct(r.ctr)}</td>
       <td class="px-3 py-3 text-center">${bucketBadge(r.bucket)}</td>
       <td class="px-3 py-3 text-center">${sparkline(r.history, cur)}</td>
     </tr>
@@ -863,6 +989,13 @@ function renderTracker() {
   document.querySelectorAll("#tracker-body tr").forEach(tr => {
     tr.addEventListener("click", () => openModal(tr.dataset.slug));
   });
+}
+
+// Signed change in a count where more is better (posts on page 1).
+function countDelta(cur, prev) {
+  const d = cur - prev;
+  if (d === 0) return `<span class="delta-flat text-xs">no change</span>`;
+  return `<span class="${d > 0 ? "delta-up" : "delta-down"} text-xs font-medium">${d > 0 ? "▲" : "▼"} ${Math.abs(d)}</span>`;
 }
 
 // ─── Overview ───────────────────────────────────────────────────────────
@@ -921,56 +1054,126 @@ function renderOverview() {
                       .map(r => r.position - r.prev_position).sort((a, b) => a - b);
   const medDelta = paired.length ? +median(paired).toFixed(2) : null;
 
-  const portfolioTile = (label, value, deltaHtml, sub = "") => `
-    <div class="bg-white rounded-lg border border-slate-200 p-4">
+  // ─── Headline ───────────────────────────────────────────────────────
+  document.getElementById("hero-figure").textContent = curImp.toLocaleString();
+  const impPct = pctChange(curImp, priImp);
+  document.getElementById("hero-delta").innerHTML =
+    `${pctCell(impPct)} <span class="text-slate-400">vs previous ${currentWeeks().length} weeks</span>`;
+
+  const tile = (label, value, deltaHtml, sub = "") => `
+    <div class="rounded-lg border border-slate-200 p-4">
       <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
       <div class="flex items-baseline gap-2 mt-1">
-        <div class="text-2xl font-semibold text-slate-900">${value}</div>
+        <div class="stat-value">${value}</div>
         <div>${deltaHtml}</div>
       </div>
-      ${sub ? `<div class="text-[11px] text-slate-400 mt-1">${sub}</div>` : ""}
+      ${sub ? `<div class="text-[11px] text-slate-400 mt-1 leading-snug">${sub}</div>` : ""}
     </div>`;
-  const medSub = medPos !== null
-    ? `median ${medPos.toFixed(1)} · typical post moved ${medDelta !== null ? deltaCell(medDelta) : "—"} (${paired.length} posts) · headline is impression-weighted`
-    : "";
-  document.getElementById("portfolio-grid").innerHTML =
-    portfolioTile("Total Impressions", fmt(curImp), pctCell(pctChange(curImp, priImp))) +
-    portfolioTile("Total Clicks",      fmt(curClk), pctCell(pctChange(curClk, priClk))) +
-    portfolioTile("Avg Position",      curAvgPos !== null ? curAvgPos.toFixed(1) : "—", deltaCell(posDelta), medSub);
+  document.getElementById("hero-tiles").innerHTML =
+    tile("Clicks", fmt(curClk), pctCell(pctChange(curClk, priClk))) +
+    tile("Avg position", curAvgPos !== null ? curAvgPos.toFixed(1) : "—", deltaCell(posDelta),
+         medPos !== null ? `median ${medPos.toFixed(1)} · impression-weighted` : "") +
+    tile("On page 1", p1, countDelta(p1, ranks.filter(r => r.prev_bucket === "page1").length), `of ${total} tracked posts`) +
+    tile("Fell off page 1", fellOff, "", fellOff ? `${fellOff === 1 ? "post was" : "posts were"} page 1 last window` : "none this window");
+
+  // Plain-language read of the same numbers — the dashboard should state its own
+  // conclusion, not make the reader assemble it from tiles.
+  const word = (n, up, down) => n === null ? "flat" : (Math.abs(n) < 0.5 ? "flat" : (n > 0 ? up : down));
+  const clkPct = pctChange(curClk, priClk);
+  const mag = n => n === null ? "" : `${Math.abs(n).toFixed(0)}%`;
+  const typical = medDelta === null ? "there aren't enough paired posts to say how the typical one moved"
+    : Math.abs(medDelta) < 1 ? "the typical post held its position"
+    : medDelta < 0 ? `the typical post improved by ${Math.abs(medDelta).toFixed(1)} places`
+    : `the typical post slipped ${medDelta.toFixed(1)} places`;
+  document.getElementById("hero-read").innerHTML =
+    `Impressions are <strong>${word(impPct, "up", "down")}${impPct !== null && Math.abs(impPct) >= 0.5 ? " " + mag(impPct) : ""}</strong> ` +
+    `and clicks <strong>${word(clkPct, "up", "down")}${clkPct !== null && Math.abs(clkPct) >= 0.5 ? " " + mag(clkPct) : ""}</strong> ` +
+    `against the previous ${currentWeeks().length} weeks. ` +
+    `<strong>${p1}</strong> of ${total} posts sit on page 1, and ${typical}.`;
+
+  // ─── Distribution ───────────────────────────────────────────────────
+  const nd = ranks.filter(r => r.bucket === "no-data").length;
+  const prevCounts = {
+    p1: ranks.filter(r => r.prev_bucket === "page1").length,
+    p2: ranks.filter(r => r.prev_bucket === "page2").length,
+    p3: ranks.filter(r => r.prev_bucket === "page3+").length,
+    nd: ranks.filter(r => r.prev_bucket === "no-data").length,
+  };
+  const cur = { p1, p2, p3, nd };
+  const side = c => Math.max(c.p1 + c.p2 / 2, c.p3 + c.p2 / 2);
+  const scale = Math.max(side(cur), side(prevCounts), 1);
+  document.getElementById("dist-chart").innerHTML =
+    divergingBucketBar("This window", cur, scale) +
+    divergingBucketBar("Prior window", prevCounts, scale);
+  document.getElementById("dist-legend").innerHTML = [
+    ["var(--bucket-p1)", "Page 1", cur.p1],
+    ["var(--bucket-p2)", "Page 2", cur.p2],
+    ["var(--bucket-p3)", "Page 3+", cur.p3],
+    ["var(--bucket-nd)", "No data", cur.nd],
+  ].map(([c, l, n]) => `<span class="inline-flex items-center gap-1.5"><span class="viz-key" style="background:${c}"></span>${l} <strong class="tnum">${n}</strong></span>`).join("");
 
   renderPortfolioChart();
 
-  const kpi = (label, value, color = "slate") => `
-    <div class="bg-white rounded-lg border border-slate-200 p-4">
-      <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
-      <div class="text-2xl font-semibold mt-1 text-${color}-600">${value}</div>
+  // ─── Movers, with a diverging bar so magnitude reads without arithmetic ──
+  const withDelta = ranks.filter(r => r.delta !== null);
+  const maxAbs = Math.max(1, ...withDelta.map(r => Math.abs(r.delta)));
+  const moverRow = r => {
+    const pctW = Math.min(100, (Math.abs(r.delta) / maxAbs) * 100);
+    const good = r.delta < 0;
+    return `
+    <div class="py-2 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-1 rounded" onclick="openModal('${r.slug}')">
+      <div class="flex justify-between items-baseline gap-3">
+        <div class="truncate text-slate-800">${r.title}</div>
+        <div class="text-xs whitespace-nowrap tnum">${deltaCell(r.delta)} <span class="text-slate-400">now ${r.position !== null ? r.position.toFixed(1) : "—"}</span></div>
+      </div>
+      <div class="mt-1.5 h-1.5 rounded-full" style="background:#f1f5f9">
+        <div style="width:${pctW.toFixed(1)}%;height:100%;border-radius:9999px;background:${good ? "var(--bucket-p1)" : "var(--bucket-p3)"}"></div>
+      </div>
     </div>`;
-  document.getElementById("kpi-grid").innerHTML =
-    kpi("Total", total) + kpi("Page 1", p1, "green") + kpi("Page 2", p2, "amber") +
-    kpi("Page 3+", p3, "red") + kpi("Gainers", gainers, "green") +
-    kpi("Droppers", droppers, "red") + kpi("Fell off P1", fellOff, "red");
+  };
+  const empty = `<div class="text-slate-400 italic py-3 text-sm">Nothing moved enough to list.</div>`;
+  const gain = withDelta.slice().sort((a, b) => a.delta - b.delta).filter(r => r.delta < 0).slice(0, 8);
+  const drop = withDelta.slice().sort((a, b) => b.delta - a.delta).filter(r => r.delta > 0).slice(0, 8);
+  document.getElementById("overview-gainers").innerHTML  = gain.length ? gain.map(moverRow).join("") : empty;
+  document.getElementById("overview-droppers").innerHTML = drop.length ? drop.map(moverRow).join("") : empty;
+}
 
-  const miniRow = r => `
-    <div class="flex justify-between items-baseline py-1.5 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-1" onclick="openModal('${r.slug}')">
-      <div class="truncate pr-3">${r.title}</div>
-      <div class="font-mono text-xs whitespace-nowrap">${deltaCell(r.delta)} <span class="text-slate-400">(${r.position?.toFixed(1) ?? "—"})</span></div>
+// A diverging stacked bar centred on page 2: page 1 grows left, page 3+ grows
+// right, so portfolio health reads as a balance rather than four numbers to
+// compare. Segments are separated by a 2px gap in the surface colour, never a
+// stroke. "No data" sits outside the scale — it's absence, not a rank.
+function divergingBucketBar(label, c, scale) {
+  const half = 50;                          // centre of the track, in %
+  const u = v => (v / scale) * half;        // posts → % of track
+  const seg = (leftPct, widthPct, color, title) => widthPct <= 0 ? "" :
+    `<div title="${title}" style="position:absolute;left:${leftPct}%;width:calc(${widthPct}% - 2px);top:0;bottom:0;background:${color};border-radius:2px"></div>`;
+  const p2L = half - u(c.p2 / 2);
+  return `
+    <div class="mb-3 last:mb-0">
+      <div class="flex justify-between text-xs text-slate-500 mb-1">
+        <span>${label}</span>
+        <span class="tnum">${c.p1 + c.p2 + c.p3 + c.nd} posts${c.nd ? ` · ${c.nd} no data` : ""}</span>
+      </div>
+      <div style="position:relative;height:26px;background:#f8fafc;border-radius:3px">
+        ${seg(p2L - u(c.p1), u(c.p1), "var(--bucket-p1)", `Page 1: ${c.p1}`)}
+        ${seg(p2L, u(c.p2), "var(--bucket-p2)", `Page 2: ${c.p2}`)}
+        ${seg(half + u(c.p2 / 2), u(c.p3), "var(--bucket-p3)", `Page 3+: ${c.p3}`)}
+        <div title="Page 2 — the neutral midpoint" style="position:absolute;left:${half}%;top:-6px;bottom:-6px;width:1px;background:var(--ink-muted)"></div>
+      </div>
     </div>`;
-  const sortedByDelta = ranks.filter(r => r.delta !== null);
-  document.getElementById("overview-gainers").innerHTML  = sortedByDelta.slice().sort((a, b) => a.delta - b.delta).slice(0, 8).map(miniRow).join("");
-  document.getElementById("overview-droppers").innerHTML = sortedByDelta.slice().sort((a, b) => b.delta - a.delta).slice(0, 8).map(miniRow).join("");
 }
 
 // ─── Movers ─────────────────────────────────────────────────────────────
 // Portfolio totals for every tracked week, independent of the selected window —
 // the long view that window-relative tabs structurally can't provide.
 function portfolioHistory() {
-  const byWeek = new Map(ALL_WEEKS.map(w => [w, { w, i: 0, c: 0, posImp: 0 }]));
+  const byWeek = new Map(ALL_WEEKS.map(w => [w, { w, i: 0, c: 0, posImp: 0, p1: 0 }]));
   RANKINGS.forEach(r => (r.history || []).forEach(h => {
     const b = byWeek.get(h.w);
     if (!b) return;
     b.i += h.i;
     b.c += h.c;
-    if (h.p !== null && h.i > 0) b.posImp += h.p * h.i;
+    if (h.p !== null && h.i > 0) { b.posImp += h.p * h.i; if (h.p <= 10) b.p1 += 1; }
   }));
   return ALL_WEEKS.map(w => {
     const b = byWeek.get(w);
@@ -978,18 +1181,47 @@ function portfolioHistory() {
       w,
       i: b.i,
       c: b.c,
+      p1: b.p1,
       p: b.i > 0 ? +(b.posImp / b.i).toFixed(2) : null,
       ctr: b.i > 0 ? b.c / b.i : 0,
     };
   });
 }
 
+const PMETRIC_LABEL = {
+  i:  "Total impressions per week, all tracked posts.",
+  c:  "Total clicks per week, all tracked posts.",
+  p:  "Impression-weighted average position per week — lower is better, and it moves when the traffic mix changes, not only when rankings do.",
+  p1: "How many posts averaged position 10 or better that week.",
+};
+
 function renderPortfolioChart() {
-  document.getElementById("portfolio-chart").innerHTML =
-    lineChart(portfolioHistory(), state.pMetric, 900, 200);
+  const hist = portfolioHistory();
+  document.getElementById("portfolio-chart").innerHTML = lineChart(hist, state.pMetric, 900, 230);
+  document.getElementById("portfolio-caption").textContent =
+    (PMETRIC_LABEL[state.pMetric] || "") + " Selected window shaded blue, prior window grey.";
   document.querySelectorAll(".pmetric-btn").forEach(b => {
     b.classList.toggle("seg-btn-active", b.dataset.pmetric === state.pMetric);
   });
+  // Table-view twin, so no value is reachable only by hovering.
+  document.getElementById("portfolio-table").innerHTML = `
+    <table class="w-full text-xs tnum">
+      <thead class="text-slate-500 border-b border-slate-200 sticky top-0 bg-white">
+        <tr><th class="text-left py-1.5 font-medium">Week</th>
+            <th class="text-right py-1.5 font-medium">Impressions</th>
+            <th class="text-right py-1.5 font-medium">Clicks</th>
+            <th class="text-right py-1.5 font-medium">Avg pos</th>
+            <th class="text-right py-1.5 font-medium">On page 1</th></tr>
+      </thead>
+      <tbody>${hist.slice().reverse().map(r => `
+        <tr class="border-b border-slate-50">
+          <td class="py-1 text-slate-500">${r.w}${r.w === PROVISIONAL_WEEK ? ` <span class="prov-chip">provisional</span>` : ""}</td>
+          <td class="py-1 text-right">${fmt(r.i)}</td>
+          <td class="py-1 text-right">${fmt(r.c)}</td>
+          <td class="py-1 text-right">${r.p === null ? "—" : r.p.toFixed(1)}</td>
+          <td class="py-1 text-right">${r.p1}</td>
+        </tr>`).join("")}</tbody>
+    </table>`;
 }
 
 document.querySelectorAll(".pmetric-btn").forEach(b => {
@@ -997,6 +1229,11 @@ document.querySelectorAll(".pmetric-btn").forEach(b => {
     state.pMetric = b.dataset.pmetric;
     renderPortfolioChart();
   });
+});
+document.getElementById("pf-table-toggle").addEventListener("click", e => {
+  const tableHidden = document.getElementById("portfolio-table").classList.toggle("hidden");
+  e.currentTarget.classList.toggle("seg-btn-active", !tableHidden);
+  document.getElementById("portfolio-chart").classList.toggle("hidden", !tableHidden);
 });
 
 function renderMovers() {
@@ -1272,47 +1509,81 @@ function renderRecent() {
 }
 
 // ─── Modal ──────────────────────────────────────────────────────────────
+// Round a raw span up to clean axis ticks (1/2/2.5/5 × 10ⁿ) so the gridlines
+// carry the values that aren't directly labelled.
+function niceTicks(lo, hi, count = 4) {
+  const span = Math.max(hi - lo, 1e-9);
+  const raw = span / count;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].find(m => m * mag >= raw) * mag;
+  const start = Math.floor(lo / step) * step;
+  const out = [];
+  for (let v = start; v <= hi + step * 0.5; v += step) if (v >= lo - step * 0.5) out.push(+v.toFixed(6));
+  return out;
+}
+
 function lineChart(history, metric, w = 600, h = 140) {
   const points = history.filter(h => h[metric] !== null && h[metric] !== undefined && !(metric === "p" && h.i === 0));
   if (points.length < 2) return `<div class="text-slate-400 italic text-xs py-6 text-center">Not enough data for a chart.</div>`;
   const values = points.map(h => h[metric]);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = Math.max(max - min, 1);
-  const padX = 50, padY = 20;
-  const innerW = w - padX - 10, innerH = h - padY * 2;
-  const stepX = innerW / Math.max(points.length - 1, 1);
   const isPosition = metric === "p"; // position: lower=better, invert visually
+  // Counts and volumes are only honest from zero; position is a rank, so it
+  // anchors on the observed range instead.
+  const lo = isPosition ? Math.min(...values) : 0;
+  const hi = Math.max(...values);
+  const ticks = niceTicks(lo, hi, 4);
+  const min = Math.min(lo, ticks[0]);
+  const max = Math.max(hi, ticks[ticks.length - 1]);
+  const range = Math.max(max - min, 1);
+  const padX = 54, padY = 18, padB = 30;   // padB reserves the x-axis band so
+  const innerW = w - padX - 12;            // labels can't overflow the card
+  const innerH = h - padY - padB;
+  const stepX = innerW / Math.max(points.length - 1, 1);
   const yScale = v => {
     const t = (v - min) / range;
     return isPosition ? padY + t * innerH : padY + (1 - t) * innerH;
   };
   const xScale = i => padX + i * stepX;
+  const baseY = yScale(isPosition ? max : min);
   const xy = points.map((p, i) => `${xScale(i).toFixed(1)},${yScale(p[metric]).toFixed(1)}`);
   // The newest week is still settling, so draw its segment dashed and its marker
   // hollow — a partial value shouldn't read as a genuine dip at the right edge.
   const provAt = points.length > 1 && points[points.length - 1].w === PROVISIONAL_WEEK
     ? points.length - 1 : -1;
+  // One series, one hue. Deliberately NOT the red bucket pole — that's a status
+  // colour, and a status colour must never stand in for a data series.
+  const HUE = "var(--seq-450)";
+  // Area is a ~10% wash of the series hue, never a saturated block.
+  const area = `<polygon fill="${HUE}" fill-opacity="0.10" points="${xScale(0).toFixed(1)},${baseY.toFixed(1)} ${xy.join(" ")} ${xScale(points.length - 1).toFixed(1)},${baseY.toFixed(1)}"/>`;
   const line = provAt >= 0
-    ? `<polyline fill="none" stroke="#0f172a" stroke-width="1.5" points="${xy.slice(0, -1).join(" ")}"/>
-       <polyline fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 2" points="${xy.slice(-2).join(" ")}"/>`
-    : `<polyline fill="none" stroke="#0f172a" stroke-width="1.5" points="${xy.join(" ")}"/>`;
-  const dots = points.map((p, i) => i === provAt
-    ? `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(p[metric]).toFixed(1)}" r="2.5" fill="#fff" stroke="#0f172a" stroke-width="1.2"/>`
-    : `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(p[metric]).toFixed(1)}" r="2" fill="#0f172a"/>`).join("");
-  const provNote = provAt >= 0
-    ? `<text x="${w - 10}" y="${padY - 8}" text-anchor="end" font-size="9" fill="#94a3b8">${PROVISIONAL_WEEK} provisional</text>`
-    : "";
-  // Y-axis labels (top and bottom)
-  const labelTop = isPosition ? min : max;
-  const labelBot = isPosition ? max : min;
-  const labelFmt = v => metric === "ctr" ? (v * 100).toFixed(1) + "%" : (typeof v === "number" && v >= 1000 ? Math.round(v).toLocaleString() : (typeof v === "number" ? v.toFixed(1) : v));
-  // X-axis: first/middle/last labels
-  const xLabels = [
-    { i: 0, txt: points[0].w },
-    { i: Math.floor(points.length / 2), txt: points[Math.floor(points.length / 2)].w },
-    { i: points.length - 1, txt: points[points.length - 1].w },
-  ];
+    ? `<polyline fill="none" stroke="${HUE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${xy.slice(0, -1).join(" ")}"/>
+       <polyline fill="none" stroke="${HUE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="4 3" points="${xy.slice(-2).join(" ")}"/>`
+    : `<polyline fill="none" stroke="${HUE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${xy.join(" ")}"/>`;
+  // Only the endpoint carries a marker — a dot on every week is noise. It wears a
+  // 2px surface ring so it stays legible where it crosses the line.
+  const lastI = points.length - 1;
+  const endDot = `<circle cx="${xScale(lastI).toFixed(1)}" cy="${yScale(points[lastI][metric]).toFixed(1)}" r="4"
+    fill="${provAt >= 0 ? "var(--viz-surface)" : HUE}" stroke="${provAt >= 0 ? HUE : "var(--viz-surface)"}" stroke-width="2"/>`;
+  const labelFmt = v => metric === "ctr" ? (v * 100).toFixed(1) + "%"
+    : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString() : (Number.isInteger(v) ? String(v) : v.toFixed(1)));
+  // Gridlines carry the values that aren't directly labelled: solid hairlines,
+  // one step off the surface, never dashed.
+  const grid = ticks.map(t => {
+    const y = yScale(t);
+    if (y < padY - 1 || y > padY + innerH + 1) return "";
+    return `<line x1="${padX}" y1="${y.toFixed(1)}" x2="${w - 12}" y2="${y.toFixed(1)}" stroke="var(--viz-grid)" stroke-width="1"/>
+            <text x="${padX - 8}" y="${(y + 3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--ink-muted)" style="font-variant-numeric:tabular-nums">${labelFmt(t)}</text>`;
+  }).join("");
+  // Stride the x labels, then drop any that would collide with the always-drawn
+  // final label. The last one is right-anchored so it can't overflow the viewBox.
+  const xEvery = Math.max(1, Math.ceil(points.length / 8));
+  const MIN_GAP = 58;
+  const keep = [];
+  for (let i = 0; i < lastI; i += xEvery) if (xScale(lastI) - xScale(i) >= MIN_GAP) keep.push(i);
+  const xLabels = keep.map(i =>
+      `<text x="${xScale(i).toFixed(1)}" y="${h - 10}" text-anchor="middle" font-size="9" fill="var(--ink-muted)">${points[i].w.replace("-W", " W")}</text>`
+    ).join("") +
+    `<text x="${(w - 4).toFixed(1)}" y="${h - 10}" text-anchor="end" font-size="9" fill="var(--ink-muted)">${points[lastI].w.replace("-W", " W")}</text>`;
   // Shade current + prior windows by mapping selected weeks to point indices.
   // Half-step padding on either end keeps the band aligned with sample marks.
   const curWks = new Set(currentWeeks());
@@ -1322,22 +1593,62 @@ function lineChart(history, metric, w = 600, h = 140) {
     if (idx.length === 0) return "";
     const x0 = xScale(idx[0]) - stepX / 2;
     const x1 = xScale(idx[idx.length - 1]) + stepX / 2;
-    return `<rect x="${Math.max(padX, x0).toFixed(1)}" y="${padY}" width="${Math.max(0, Math.min(w - 10, x1) - Math.max(padX, x0)).toFixed(1)}" height="${innerH}" fill="${fill}"/>`;
+    return `<rect x="${Math.max(padX, x0).toFixed(1)}" y="${padY}" width="${Math.max(0, Math.min(w - 12, x1) - Math.max(padX, x0)).toFixed(1)}" height="${innerH}" fill="${fill}"/>`;
   };
-  const priBand = bandRect(priWks, "#f1f5f9");  // slate-100 — neutral
-  const curBand = bandRect(curWks, "#dbeafe");  // blue-100 — active
-  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="max-width:${w}px;display:block">
-    ${priBand}${curBand}
-    <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h - padY}" stroke="#e2e8f0"/>
-    <line x1="${padX}" y1="${h - padY}" x2="${w - 10}" y2="${h - padY}" stroke="#e2e8f0"/>
-    <text x="${padX - 6}" y="${padY + 4}" text-anchor="end" font-size="10" fill="#64748b">${labelFmt(labelTop)}</text>
-    <text x="${padX - 6}" y="${h - padY + 4}" text-anchor="end" font-size="10" fill="#64748b">${labelFmt(labelBot)}</text>
+  // Hit targets span the full plot height and the whole step, so hover never
+  // demands landing on the mark itself.
+  const hits = points.map((p, i) => `<rect class="viz-hit" x="${(xScale(i) - stepX / 2).toFixed(1)}" y="${padY}"
+      width="${stepX.toFixed(1)}" height="${innerH}" fill="transparent"
+      data-x="${xScale(i).toFixed(1)}" data-w="${p.w}"
+      data-v="${labelFmt(p[metric])}" data-i="${fmt(p.i)}" data-c="${fmt(p.c)}"
+      data-p="${p.p === null || p.p === undefined ? "—" : p.p.toFixed(1)}"
+      data-prov="${p.w === PROVISIONAL_WEEK ? "1" : ""}"/>`).join("");
+  // width:100% + height:auto scales the viewBox to the card instead of
+  // letterboxing it; preserveAspectRatio="none" would fill but distort the text.
+  return `<svg class="viz-chart" viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block"
+      data-pad-y="${padY}" data-inner-h="${innerH}" role="img" aria-label="${metric} by week">
+    ${bandRect(priWks, "#f4f4f2")}${bandRect(curWks, "#eaf2fd")}
+    ${grid}
+    <line x1="${padX}" y1="${padY + innerH}" x2="${w - 12}" y2="${padY + innerH}" stroke="var(--viz-baseline)" stroke-width="1"/>
+    ${area}
     ${line}
-    ${dots}
-    ${provNote}
-    ${xLabels.map(l => `<text x="${xScale(l.i)}" y="${h - 4}" text-anchor="middle" font-size="9" fill="#94a3b8">${l.txt}</text>`).join("")}
+    ${endDot}
+    <line class="viz-cross" x1="0" y1="${padY}" x2="0" y2="${padY + innerH}" stroke="var(--ink-muted)" stroke-width="1" opacity="0"/>
+    ${xLabels}
+    ${hits}
   </svg>`;
 }
+
+// ─── Hover layer ────────────────────────────────────────────────────────
+// Delegated so it survives every innerHTML re-render. Tooltips enhance only —
+// the same values are in the Table view and the weekly history table.
+const vizTip = () => document.getElementById("viz-tip");
+document.addEventListener("mousemove", e => {
+  const hit = e.target.closest ? e.target.closest(".viz-hit") : null;
+  const tip = vizTip();
+  if (!tip) return;
+  if (!hit) { tip.classList.remove("on"); document.querySelectorAll(".viz-cross").forEach(c => c.setAttribute("opacity", "0")); return; }
+  const d = hit.dataset;
+  const svg = hit.ownerSVGElement;
+  const cross = svg && svg.querySelector(".viz-cross");
+  if (cross) {
+    cross.setAttribute("x1", d.x); cross.setAttribute("x2", d.x); cross.setAttribute("opacity", "0.35");
+  }
+  tip.innerHTML =
+    `<div class="tip-h">${d.w.replace("-W", " week ")}${d.prov ? " · provisional" : ""}</div>` +
+    `<div class="tip-r"><span class="tip-k">Impressions</span><span>${d.i}</span></div>` +
+    `<div class="tip-r"><span class="tip-k">Clicks</span><span>${d.c}</span></div>` +
+    `<div class="tip-r"><span class="tip-k">Avg position</span><span>${d.p}</span></div>` +
+    (d.prov ? `<div class="tip-k" style="margin-top:3px">Still settling — will revise up.</div>` : "");
+  tip.classList.add("on");
+  const pad = 14;
+  const rect = tip.getBoundingClientRect();
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + rect.width > window.innerWidth - 8) x = e.clientX - rect.width - pad;
+  if (y + rect.height > window.innerHeight - 8) y = e.clientY - rect.height - pad;
+  tip.style.left = x + "px";
+  tip.style.top = y + "px";
+}, true);
 
 window.openModal = function(slug) {
   state.modalSlug = slug;
