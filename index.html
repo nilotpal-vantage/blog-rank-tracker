@@ -22,6 +22,12 @@
   .sparkline { display: inline-block; }
   .seg-btn { padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #e2e8f0; background: white; color: #475569; cursor: pointer; }
   .seg-btn-active { background: #0f172a; color: white; border-color: #0f172a; }
+  .banner { border-radius: 6px; padding: 10px 14px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.45; }
+  .banner strong { font-weight: 600; }
+  .banner code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .banner-err  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  .banner-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .prov-chip { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; border-radius: 3px; padding: 0 4px; white-space: nowrap; }
   select, input[type="date"], input[type="search"] {
     background: white;
     border: 1px solid #cbd5e1;
@@ -83,9 +89,28 @@
 
 <main class="max-w-7xl mx-auto px-6 py-6">
 
+  <!-- Data-integrity alerts: stale refresh, weeks the active source doesn't cover. -->
+  <div id="alerts" class="space-y-2 mb-4"></div>
+
   <section id="panel-overview" class="hidden">
     <div id="portfolio-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3"></div>
     <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6"></div>
+
+    <div class="bg-white rounded-lg border border-slate-200 p-5 mb-6">
+      <div class="flex items-baseline justify-between gap-3 flex-wrap mb-1">
+        <h3 class="text-sm font-semibold text-slate-700">Portfolio history — every tracked week</h3>
+        <div class="flex gap-1">
+          <button data-pmetric="i" class="pmetric-btn seg-btn">Impressions</button>
+          <button data-pmetric="c" class="pmetric-btn seg-btn">Clicks</button>
+          <button data-pmetric="p" class="pmetric-btn seg-btn">Avg position</button>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 mb-3">
+        Absolute totals across all posts; the selected window is shaded blue, the prior window grey.
+        Every other view is relative to the previous window, which can't tell a blip from a trend.
+      </p>
+      <div id="portfolio-chart"></div>
+    </div>
     <div class="grid md:grid-cols-2 gap-6">
       <div class="bg-white rounded-lg border border-slate-200 p-5">
         <h3 class="text-sm font-semibold text-slate-700 mb-3">Top Gainers</h3>
@@ -393,6 +418,16 @@
         <li><strong>Drafts excluded.</strong> Slugs ending in <code>-draft</code> are skipped.</li>
         <li><strong>One author.</strong> Filtered to Astro frontmatter <code>author</code> containing "nilotpal".</li>
         <li><strong>2-day GSC lag.</strong> The most recent ~2 days of data are not yet finalized and aren't pulled.</li>
+        <li><strong>The newest week is provisional.</strong> Because of that lag the latest week is always short — measured against snapshots a week apart it comes in about <strong>16% low</strong>, then revises up. Weeks older than that don't move. It's drawn with a dashed segment and a hollow marker, tagged <span class="prov-chip">provisional</span> in the weekly table, and flagged in the period line. Don't read the final point as a trend.</li>
+        <li><strong>Zero vs. no data.</strong> An empty window renders as zero either way. When the underlying file has no rows for the selected weeks, a banner appears at the top of the page saying so — a data gap, not a traffic drop. Views on the Queries tab read <code>queries.js</code>; every other tab reads <code>rankings.js</code>, and the two can drift if a refresh is only partly committed.</li>
+        <li><strong>Avg Position is impression-weighted.</strong> If a post loses its high-volume page-1 terms and only long-tail page-4 impressions remain, the average worsens even though nothing was demoted. The Overview tile shows the median across posts underneath as a cross-check, and the Rank Tracker tab avoids the problem entirely by using target-keyword rank.</li>
+      </ul>
+
+      <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">When the dashboard warns you</h3>
+      <ul class="text-slate-700">
+        <li><strong>Amber "data is N days old"</strong> — the Monday refresh hasn't run in over 10 days. Run <code>./refresh.sh</code> and check <code>~/.blog-rank-tracker.log</code>. Turns red past 21 days.</li>
+        <li><strong>Amber "missing N of M weeks"</strong> — the active tab's data file is partly stale. Totals and Δ are understated; don't act on them.</li>
+        <li><strong>Red "no data for this window"</strong> — the file has nothing for these weeks at all. Every number below is meaningless until refreshed.</li>
       </ul>
 
       <h3 class="text-base font-semibold text-slate-900 mt-6 mb-2">Files in the repo</h3>
@@ -485,6 +520,8 @@ const state = {
   moversMinImp: 500,
   sort: "position",
   sortDir: "asc",
+  tab: "tracker",        // active tab — decides which data source coverage warnings check
+  pMetric: "i",          // metric shown in the Overview portfolio-history chart
   modalSlug: null,
   modalMetric: "p",
   modalSource: "url",   // "url" = URL-level history (all queries); "target" = target keyword only
@@ -499,6 +536,36 @@ const state = {
 };
 
 const ALL_WEEKS = META.all_weeks || [];
+
+// ─── Data coverage ──────────────────────────────────────────────────────
+// A window can come back empty for two very different reasons: the posts really
+// got no traffic, or we simply hold no rows for those weeks. aggregate() renders
+// both as zero, which is how a ten-week-stale queries.js once read as a
+// portfolio-wide collapse. Record which weeks each source actually covers so a
+// view can say "no data" instead of implying "zero".
+const RANK_WEEKS = new Set();
+RANKINGS.forEach(r => {
+  (r.history || []).forEach(h => RANK_WEEKS.add(h.w));
+  (r.target_history || []).forEach(h => RANK_WEEKS.add(h.w));
+});
+const QUERY_WEEKS = new Set();
+Object.values(typeof QUERIES === "undefined" ? {} : QUERIES).forEach(list =>
+  (list || []).forEach(q => (q.h || []).forEach(h => QUERY_WEEKS.add(h.w)))
+);
+
+// Google finalises Search Console data on a lag, so the newest week is always
+// short. Measured against snapshots taken a week apart it lands ~16% low and
+// then revises up; weeks older than that don't move. Label it rather than let a
+// partial value read as a real dip.
+const PROVISIONAL_WEEK = ALL_WEEKS.length ? ALL_WEEKS[ALL_WEEKS.length - 1] : null;
+
+// Tabs whose numbers come from queries.js rather than rankings.js. The two files
+// are written by the same run but committed separately, so they can drift apart.
+const QUERY_TABS = new Set(["queries"]);
+
+function missingWeeks(weeks, have) {
+  return weeks.filter(w => !have.has(w));
+}
 
 // ─── Window helpers ─────────────────────────────────────────────────────
 function currentWeeks() {
@@ -616,11 +683,62 @@ function updatePeriodLine() {
   const cur = currentWeeks();
   const pri = priorWeeks();
   const fmtWk = w => w || "—";
+  const prov = PROVISIONAL_WEEK && cur.includes(PROVISIONAL_WEEK)
+    ? `<div class="mt-0.5">ends on <span class="prov-chip">provisional</span> ${PROVISIONAL_WEEK}</div>`
+    : "";
   const html = cur.length
     ? `<div>Window: ${fmtWk(cur[0])} → ${fmtWk(cur[cur.length-1])} (${cur.length} weeks)</div>` +
-      `<div>vs prior: ${fmtWk(pri[0])} → ${fmtWk(pri[pri.length-1])} (${pri.length} weeks)</div>`
+      `<div>vs prior: ${fmtWk(pri[0])} → ${fmtWk(pri[pri.length-1])} (${pri.length} weeks)</div>` + prov
     : `<div>No weeks selected</div>`;
   document.getElementById("period-line").innerHTML = html;
+}
+
+// ─── Data-integrity alerts ──────────────────────────────────────────────
+// The dashboard used to render a broken state as a confident one. These banners
+// exist so it can never again report absence of data as absence of traffic.
+function daysSince(iso) {
+  const then = new Date(iso);
+  if (isNaN(then.getTime())) return null;
+  return Math.floor((Date.now() - then.getTime()) / 86400000);
+}
+
+function renderAlerts() {
+  const out = [];
+  const age = daysSince(META.generated_at);
+
+  // A refresh that silently stops is invisible otherwise — the numbers still look
+  // plausible, just frozen. The weekly job runs Mondays, so >10 days means a miss.
+  if (age !== null && age > 10) {
+    out.push(`<div class="banner ${age > 21 ? "banner-err" : "banner-warn"}">
+      <span aria-hidden="true">⚠</span>
+      <span><strong>Data is ${age} days old</strong> — last refreshed ${fmtDate(META.generated_at)}.
+      The weekly refresh may have failed. Run <code>./refresh.sh</code> and check
+      <code>~/.blog-rank-tracker.log</code>.</span></div>`);
+  }
+
+  const cur = currentWeeks();
+  const usesQueries = QUERY_TABS.has(state.tab);
+  const have = usesQueries ? QUERY_WEEKS : RANK_WEEKS;
+  const src = usesQueries ? "queries.js" : "rankings.js";
+  const gone = missingWeeks(cur, have);
+  if (cur.length && gone.length) {
+    const all = gone.length === cur.length;
+    const span = gone.length > 1 ? `${gone[0]} – ${gone[gone.length - 1]}` : gone[0];
+    out.push(`<div class="banner ${all ? "banner-err" : "banner-warn"}">
+      <span aria-hidden="true">⚠</span>
+      <span><strong>${all
+        ? "No data for this window"
+        : `Missing ${gone.length} of ${cur.length} weeks in this window`}</strong> —
+      <code>${src}</code> holds nothing for ${span}.
+      ${all
+        ? "Everything below reads as zero because the data is absent, not because traffic is."
+        : "Totals and Δ are understated. This is a data gap, not a drop."}
+      Re-run <code>./refresh.sh</code>; if that doesn't fix it, confirm all four data files were committed.</span></div>`);
+  }
+
+  const el = document.getElementById("alerts");
+  el.innerHTML = out.join("");
+  el.classList.toggle("mb-4", out.length > 0);
 }
 
 // ─── Render helpers ─────────────────────────────────────────────────────
@@ -662,20 +780,27 @@ function sparkline(history, weeks, w = 100, h = 28) {
   const max = Math.max(...positions);
   const range = Math.max(max - min, 1);
   const stepX = w / Math.max(points.length - 1, 1);
-  const pts = points.map((p, i) => {
+  const xy = points.map((p, i) => {
     const x = i * stepX;
     const y = ((p.p - min) / range) * (h - 4) + 2;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ");
+  });
   const last = points[points.length - 1].p;
   const first = points[0].p;
   const color = last < first ? "#16a34a" : (last > first ? "#dc2626" : "#94a3b8");
+  // Dash the final segment when it lands on the still-settling week, matching the
+  // full-size charts so a partial value doesn't read as a real move.
+  const prov = points.length > 1 && points[points.length - 1].w === PROVISIONAL_WEEK;
+  const poly = prov
+    ? `<polyline fill="none" stroke="${color}" stroke-width="1.5" points="${xy.slice(0, -1).join(" ")}"/>
+       <polyline fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="2 2" points="${xy.slice(-2).join(" ")}"/>`
+    : `<polyline fill="none" stroke="${color}" stroke-width="1.5" points="${xy.join(" ")}"/>`;
   // Inline label so visually-similar sparklines don't mask different absolute moves.
-  return `<div class="inline-flex flex-col items-center leading-none">
+  return `<div class="inline-flex flex-col items-center leading-none"${prov ? ` title="Final point (${PROVISIONAL_WEEK}) is provisional and will revise up."` : ""}>
     <svg class="sparkline" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-      <polyline fill="none" stroke="${color}" stroke-width="1.5" points="${pts}"/>
+      ${poly}
     </svg>
-    <span class="text-[10px] font-mono text-slate-400 mt-0.5">${first.toFixed(1)} → ${last.toFixed(1)}</span>
+    <span class="text-[10px] font-mono text-slate-400 mt-0.5">${first.toFixed(1)} → ${last.toFixed(1)}${prov ? "*" : ""}</span>
   </div>`;
 }
 
@@ -777,18 +902,43 @@ function renderOverview() {
     return `<span class="${cls} text-xs font-medium">${arrow} ${Math.abs(n).toFixed(1)}%</span>`;
   };
   const posDelta = (curAvgPos !== null && priAvgPos !== null) ? +(curAvgPos - priAvgPos).toFixed(2) : null;
-  const portfolioTile = (label, value, deltaHtml) => `
+
+  // The headline average is impression-weighted, so it degrades when a post loses
+  // its high-volume page-1 terms and only long-tail page-4 impressions survive —
+  // the number moves even though no ranking did. The median across posts doesn't
+  // have that failure mode, so show both rather than trusting either alone.
+  const median = arr => {
+    if (!arr.length) return null;
+    const m = arr.length >> 1;
+    return arr.length % 2 ? arr[m] : (arr[m - 1] + arr[m]) / 2;
+  };
+  const posList = ranks.map(r => r.position).filter(v => v !== null).sort((a, b) => a - b);
+  const medPos = median(posList);
+  // Median of per-post movements, not the difference of the two medians — only
+  // posts present in both windows can move, and differencing medians would
+  // silently compare two different sets of posts.
+  const paired = ranks.filter(r => r.position !== null && r.prev_position !== null)
+                      .map(r => r.position - r.prev_position).sort((a, b) => a - b);
+  const medDelta = paired.length ? +median(paired).toFixed(2) : null;
+
+  const portfolioTile = (label, value, deltaHtml, sub = "") => `
     <div class="bg-white rounded-lg border border-slate-200 p-4">
       <div class="text-xs text-slate-500 uppercase tracking-wider">${label}</div>
       <div class="flex items-baseline gap-2 mt-1">
         <div class="text-2xl font-semibold text-slate-900">${value}</div>
         <div>${deltaHtml}</div>
       </div>
+      ${sub ? `<div class="text-[11px] text-slate-400 mt-1">${sub}</div>` : ""}
     </div>`;
+  const medSub = medPos !== null
+    ? `median ${medPos.toFixed(1)} · typical post moved ${medDelta !== null ? deltaCell(medDelta) : "—"} (${paired.length} posts) · headline is impression-weighted`
+    : "";
   document.getElementById("portfolio-grid").innerHTML =
     portfolioTile("Total Impressions", fmt(curImp), pctCell(pctChange(curImp, priImp))) +
     portfolioTile("Total Clicks",      fmt(curClk), pctCell(pctChange(curClk, priClk))) +
-    portfolioTile("Avg Position",      curAvgPos !== null ? curAvgPos.toFixed(1) : "—", deltaCell(posDelta));
+    portfolioTile("Avg Position",      curAvgPos !== null ? curAvgPos.toFixed(1) : "—", deltaCell(posDelta), medSub);
+
+  renderPortfolioChart();
 
   const kpi = (label, value, color = "slate") => `
     <div class="bg-white rounded-lg border border-slate-200 p-4">
@@ -811,6 +961,44 @@ function renderOverview() {
 }
 
 // ─── Movers ─────────────────────────────────────────────────────────────
+// Portfolio totals for every tracked week, independent of the selected window —
+// the long view that window-relative tabs structurally can't provide.
+function portfolioHistory() {
+  const byWeek = new Map(ALL_WEEKS.map(w => [w, { w, i: 0, c: 0, posImp: 0 }]));
+  RANKINGS.forEach(r => (r.history || []).forEach(h => {
+    const b = byWeek.get(h.w);
+    if (!b) return;
+    b.i += h.i;
+    b.c += h.c;
+    if (h.p !== null && h.i > 0) b.posImp += h.p * h.i;
+  }));
+  return ALL_WEEKS.map(w => {
+    const b = byWeek.get(w);
+    return {
+      w,
+      i: b.i,
+      c: b.c,
+      p: b.i > 0 ? +(b.posImp / b.i).toFixed(2) : null,
+      ctr: b.i > 0 ? b.c / b.i : 0,
+    };
+  });
+}
+
+function renderPortfolioChart() {
+  document.getElementById("portfolio-chart").innerHTML =
+    lineChart(portfolioHistory(), state.pMetric, 900, 200);
+  document.querySelectorAll(".pmetric-btn").forEach(b => {
+    b.classList.toggle("seg-btn-active", b.dataset.pmetric === state.pMetric);
+  });
+}
+
+document.querySelectorAll(".pmetric-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    state.pMetric = b.dataset.pmetric;
+    renderPortfolioChart();
+  });
+});
+
 function renderMovers() {
   const ranks = computedRanks();
   const gate = state.moversMinImp;
@@ -1100,7 +1288,21 @@ function lineChart(history, metric, w = 600, h = 140) {
     return isPosition ? padY + t * innerH : padY + (1 - t) * innerH;
   };
   const xScale = i => padX + i * stepX;
-  const pts = points.map((p, i) => `${xScale(i).toFixed(1)},${yScale(p[metric]).toFixed(1)}`).join(" ");
+  const xy = points.map((p, i) => `${xScale(i).toFixed(1)},${yScale(p[metric]).toFixed(1)}`);
+  // The newest week is still settling, so draw its segment dashed and its marker
+  // hollow — a partial value shouldn't read as a genuine dip at the right edge.
+  const provAt = points.length > 1 && points[points.length - 1].w === PROVISIONAL_WEEK
+    ? points.length - 1 : -1;
+  const line = provAt >= 0
+    ? `<polyline fill="none" stroke="#0f172a" stroke-width="1.5" points="${xy.slice(0, -1).join(" ")}"/>
+       <polyline fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 2" points="${xy.slice(-2).join(" ")}"/>`
+    : `<polyline fill="none" stroke="#0f172a" stroke-width="1.5" points="${xy.join(" ")}"/>`;
+  const dots = points.map((p, i) => i === provAt
+    ? `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(p[metric]).toFixed(1)}" r="2.5" fill="#fff" stroke="#0f172a" stroke-width="1.2"/>`
+    : `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(p[metric]).toFixed(1)}" r="2" fill="#0f172a"/>`).join("");
+  const provNote = provAt >= 0
+    ? `<text x="${w - 10}" y="${padY - 8}" text-anchor="end" font-size="9" fill="#94a3b8">${PROVISIONAL_WEEK} provisional</text>`
+    : "";
   // Y-axis labels (top and bottom)
   const labelTop = isPosition ? min : max;
   const labelBot = isPosition ? max : min;
@@ -1130,8 +1332,9 @@ function lineChart(history, metric, w = 600, h = 140) {
     <line x1="${padX}" y1="${h - padY}" x2="${w - 10}" y2="${h - padY}" stroke="#e2e8f0"/>
     <text x="${padX - 6}" y="${padY + 4}" text-anchor="end" font-size="10" fill="#64748b">${labelFmt(labelTop)}</text>
     <text x="${padX - 6}" y="${h - padY + 4}" text-anchor="end" font-size="10" fill="#64748b">${labelFmt(labelBot)}</text>
-    <polyline fill="none" stroke="#0f172a" stroke-width="1.5" points="${pts}"/>
-    ${points.map((p, i) => `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(p[metric]).toFixed(1)}" r="2" fill="#0f172a"/>`).join("")}
+    ${line}
+    ${dots}
+    ${provNote}
     ${xLabels.map(l => `<text x="${xScale(l.i)}" y="${h - 4}" text-anchor="middle" font-size="9" fill="#94a3b8">${l.txt}</text>`).join("")}
   </svg>`;
 }
@@ -1202,7 +1405,7 @@ function renderModalChart() {
 function renderModalHistory() {
   const hist = modalActiveHistory().slice().reverse();
   document.getElementById("modal-history").innerHTML = hist.length ? hist.map(h => `
-    <tr><td class="py-1 font-mono text-slate-500">${h.w}</td>
+    <tr><td class="py-1 font-mono text-slate-500">${h.w}${h.w === PROVISIONAL_WEEK ? ` <span class="prov-chip">provisional</span>` : ""}</td>
         <td class="py-1 text-right font-mono">${h.p !== null ? h.p.toFixed(1) : "—"}</td>
         <td class="py-1 text-right font-mono">${fmt(h.i)}</td>
         <td class="py-1 text-right font-mono">${fmt(h.c)}</td>
@@ -1286,6 +1489,8 @@ document.querySelectorAll(".metric-btn").forEach(b => {
 
 // ─── Tabs ───────────────────────────────────────────────────────────────
 function switchTab(name) {
+  state.tab = name;   // coverage warnings follow the visible tab's data source
+  renderAlerts();
   document.querySelectorAll(".tab").forEach(t => {
     t.classList.toggle("tab-active", t.dataset.tab === name);
     t.classList.toggle("tab-inactive", t.dataset.tab !== name);
@@ -1496,6 +1701,7 @@ document.getElementById("dl-weekly").addEventListener("click", () => {
 // ─── Refresh dispatcher ─────────────────────────────────────────────────
 function refreshAll() {
   updatePeriodLine();
+  renderAlerts();
   renderTracker();
   // Re-render whichever non-default tab is visible
   if (!document.getElementById("panel-overview").classList.contains("hidden")) renderOverview();
@@ -1515,6 +1721,7 @@ setActiveMinGate();
 setActiveQBucket();
 setActiveQMinGate();
 updatePeriodLine();
+renderAlerts();
 renderTracker();
 </script>
 </body>
