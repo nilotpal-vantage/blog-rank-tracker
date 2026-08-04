@@ -45,8 +45,29 @@
   .stat-value  { font-size: 26px; line-height: 1.1; font-weight: 600; color: var(--ink-primary); }
   .tnum { font-variant-numeric: tabular-nums; }
 
-  /* ── Chart chrome ─────────────────────────────────────────────────────── */
-  .viz-card { background: var(--viz-surface); border: 1px solid #e2e8f0; border-radius: 10px; }
+  /* ── Surfaces ─────────────────────────────────────────────────────────
+     Chrome stays quiet so the data is the only loud thing on the page: soft
+     elevation instead of hard rules, one radius, one border colour. */
+  body { background: #f6f7f9; }
+  .viz-card {
+    background: var(--viz-surface);
+    border: 1px solid #e9ebef;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.05);
+  }
+
+  /* Masthead. A dark band anchors the page and makes the white data cards
+     read as bright rather than as more of the same flat white. */
+  .masthead { background: #0f172a; color: #fff; }
+  .masthead h1 { letter-spacing: -0.02em; }
+  .masthead .m-sub { color: #94a3b8; }
+  .masthead .m-side { color: #7c8ba1; }
+  .masthead .prov-chip { background: rgba(255,255,255,.10); color: #cbd5e1; border-color: rgba(255,255,255,.18); }
+
+  .toolbar { background: #fff; border-bottom: 1px solid #e9ebef; }
+  .tabbar  { background: #fff; border-bottom: 1px solid #e9ebef; position: sticky; top: 0; z-index: 20; }
+  .tab { transition: color .12s ease, border-color .12s ease; }
+  .tab:hover { color: var(--ink-primary); }
   .viz-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--ink-secondary); }
   .viz-key { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
   .viz-note { font-size: 11px; color: var(--ink-muted); }
@@ -74,7 +95,8 @@
     height: 16px; border-radius: 4px 0 0 4px; background: var(--seq-100);
   }
   .cellbar > .cellbar-txt { position: relative; padding-right: 3px; }
-  .tab-active { color: #0f172a; border-bottom-color: #0f172a; }
+  /* The one accent in the chrome — everything else is ink and grey. */
+  .tab-active { color: var(--seq-450); border-bottom-color: var(--seq-450); }
   .tab-inactive { color: #64748b; border-bottom-color: transparent; }
   /* Bucket chips carry the SAME diverging encoding as the charts — page 1 is
      blue everywhere, page 3+ red everywhere. Colour follows the entity. Tinted
@@ -92,8 +114,15 @@
   table tbody tr { cursor: pointer; }
   table tbody tr:hover { background: #f8fafc; }
   .sparkline { display: inline-block; }
-  .seg-btn { padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #e2e8f0; background: white; color: #475569; cursor: pointer; }
-  .seg-btn-active { background: #0f172a; color: white; border-color: #0f172a; }
+  .seg-btn {
+    padding: 5px 11px; font-size: 12px; border-radius: 6px;
+    border: 1px solid #e2e8f0; background: #fff; color: #475569; cursor: pointer;
+    transition: background .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .seg-btn:hover { background: #f4f6f8; border-color: #cbd5e1; color: var(--ink-primary); }
+  .seg-btn-active, .seg-btn-active:hover { background: #0f172a; color: #fff; border-color: #0f172a; }
+  table tbody tr { transition: background .1s ease; }
+  thead th { user-select: none; }
   .banner { border-radius: 6px; padding: 10px 14px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.45; }
   .banner strong { font-weight: 600; }
   .banner code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
@@ -111,18 +140,18 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
 
-<header class="bg-white border-b border-slate-200">
-  <div class="max-w-7xl mx-auto px-6 py-5 flex items-start justify-between flex-wrap gap-3">
+<header class="masthead">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex items-start justify-between flex-wrap gap-4">
     <div>
-      <h1 class="text-2xl font-semibold tracking-tight">Nilotpal's Blog Rank Tracker</h1>
-      <p id="meta-line" class="text-sm text-slate-500 mt-1">Loading…</p>
+      <h1 class="text-[26px] font-semibold">Nilotpal's Blog Rank Tracker</h1>
+      <p id="meta-line" class="m-sub text-sm mt-1.5">Loading…</p>
     </div>
-    <div class="text-right text-xs text-slate-400" id="period-line"></div>
+    <div class="text-right text-xs m-side leading-relaxed" id="period-line"></div>
   </div>
 </header>
 
 <!-- Window controls -->
-<div class="bg-white border-b border-slate-200">
+<div class="toolbar">
   <div class="max-w-7xl mx-auto px-6 py-3 flex items-center gap-4 flex-wrap">
     <div class="flex items-center gap-2">
       <span class="text-xs text-slate-500 uppercase tracking-wider mr-1">Window</span>
@@ -146,10 +175,10 @@
 </div>
 
 <!-- Tabs -->
-<nav class="bg-white border-b border-slate-200">
+<nav class="tabbar">
   <div class="max-w-7xl mx-auto px-6 flex gap-6 text-sm font-medium">
-    <button data-tab="overview"  class="tab py-3 border-b-2 tab-inactive">Overview</button>
-    <button data-tab="tracker"   class="tab py-3 border-b-2 tab-active">Rank Tracker</button>
+    <button data-tab="overview"  class="tab py-3 border-b-2 tab-active">Overview</button>
+    <button data-tab="tracker"   class="tab py-3 border-b-2 tab-inactive">Rank Tracker</button>
     <button data-tab="movers"    class="tab py-3 border-b-2 tab-inactive">Movers</button>
     <button data-tab="striking"  class="tab py-3 border-b-2 tab-inactive">Striking Distance</button>
     <button data-tab="ctr"       class="tab py-3 border-b-2 tab-inactive">CTR Fixes</button>
@@ -164,7 +193,7 @@
   <!-- Data-integrity alerts: stale refresh, weeks the active source doesn't cover. -->
   <div id="alerts" class="space-y-2 mb-4"></div>
 
-  <section id="panel-overview" class="hidden space-y-5">
+  <section id="panel-overview" class="space-y-5">
 
     <!-- Headline. One hero figure per view, a plain-language read of it, then
          supporting tiles — rather than seven equal-weight count tiles. -->
@@ -174,7 +203,8 @@
           <div class="text-xs uppercase tracking-wider text-slate-500">Total impressions</div>
           <div id="hero-figure" class="hero-figure mt-1">—</div>
           <div id="hero-delta" class="mt-2 text-sm"></div>
-          <p id="hero-read" class="text-sm text-slate-600 mt-3 leading-relaxed"></p>
+          <div id="hero-spark" class="mt-4"></div>
+          <p id="hero-read" class="text-sm text-slate-600 mt-4 leading-relaxed"></p>
         </div>
         <div id="hero-tiles" class="grid grid-cols-2 gap-3"></div>
       </div>
@@ -223,8 +253,8 @@
     </div>
   </section>
 
-  <section id="panel-tracker">
-    <div class="bg-white rounded-lg border border-slate-200 mb-4 p-4">
+  <section id="panel-tracker" class="hidden">
+    <div class="viz-card mb-4 p-4">
       <div class="flex flex-wrap items-center gap-3">
         <input id="search-box" type="search" placeholder="Search title or slug…" class="w-64">
         <div class="flex gap-1 text-xs">
@@ -241,7 +271,7 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div class="viz-card overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
           <tr>
@@ -262,7 +292,7 @@
   </section>
 
   <section id="panel-movers" class="hidden space-y-6">
-    <div class="bg-white rounded-lg border border-slate-200 p-4 flex items-center gap-3 flex-wrap">
+    <div class="viz-card p-4 flex items-center gap-3 flex-wrap">
       <span class="text-xs text-slate-500 uppercase tracking-wider mr-1">Min impressions</span>
       <button data-mingate="0"    class="mingate-btn seg-btn">No filter</button>
       <button data-mingate="100"  class="mingate-btn seg-btn">≥100</button>
@@ -271,16 +301,16 @@
       <button data-mingate="5000" class="mingate-btn seg-btn">≥5k</button>
       <span class="ml-auto text-xs text-slate-400">Filters out noise from low-volume rows</span>
     </div>
-    <div class="bg-white rounded-lg border border-slate-200 p-5">
+    <div class="viz-card p-5">
       <h3 class="text-sm font-semibold text-slate-700 mb-3">Fell off Page 1 <span id="fell-count" class="text-slate-400 font-normal"></span></h3>
       <div id="movers-fell" class="text-sm"></div>
     </div>
     <div class="grid md:grid-cols-2 gap-6">
-      <div class="bg-white rounded-lg border border-slate-200 p-5">
+      <div class="viz-card p-5">
         <h3 class="text-sm font-semibold text-slate-700 mb-3">Rising <span class="text-slate-400 font-normal">(Δ ≤ -5)</span></h3>
         <div id="movers-rising" class="text-sm"></div>
       </div>
-      <div class="bg-white rounded-lg border border-slate-200 p-5">
+      <div class="viz-card p-5">
         <h3 class="text-sm font-semibold text-slate-700 mb-3">Bleeding <span class="text-slate-400 font-normal">(Δ ≥ +5)</span></h3>
         <div id="movers-bleeding" class="text-sm"></div>
       </div>
@@ -288,7 +318,7 @@
   </section>
 
   <section id="panel-striking" class="hidden">
-    <div class="bg-white rounded-lg border border-slate-200 p-5">
+    <div class="viz-card p-5">
       <p class="text-sm text-slate-600 mb-4">
         Posts ranking in <strong>positions 11–20</strong> (just off page 1) with <strong>≥500 impressions</strong> in the selected window.
         Sorted by impressions — the higher the volume, the bigger the prize for nudging onto page 1.
@@ -298,7 +328,7 @@
   </section>
 
   <section id="panel-ctr" class="hidden">
-    <div class="bg-white rounded-lg border border-slate-200 p-5">
+    <div class="viz-card p-5">
       <p class="text-sm text-slate-600 mb-4">
         Posts ranking on <strong>page 1</strong> (in the selected window) with <strong>CTR &lt; 1%</strong> and <strong>≥1k impressions</strong>.
         Title or meta description rewrites — not full content rewrites.
@@ -308,7 +338,7 @@
   </section>
 
   <section id="panel-queries" class="hidden">
-    <div class="bg-white rounded-lg border border-slate-200 mb-4 p-4">
+    <div class="viz-card mb-4 p-4">
       <div class="flex flex-wrap items-center gap-3">
         <input id="queries-search" type="search" placeholder="Search query or post…" class="w-64">
         <select id="queries-post-filter" class="text-xs"></select>
@@ -339,7 +369,7 @@
       </p>
     </div>
 
-    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div class="viz-card overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
           <tr>
@@ -359,7 +389,7 @@
   </section>
 
   <section id="panel-recent" class="hidden">
-    <div class="bg-white rounded-lg border border-slate-200 p-5">
+    <div class="viz-card p-5">
       <div class="flex items-center justify-between mb-4">
         <p class="text-sm text-slate-600">
           Activity from <strong>April 2026 onward</strong>. Sorted by most recent.
@@ -373,7 +403,7 @@
   </section>
 
   <section id="panel-help" class="hidden">
-    <div class="bg-white rounded-lg border border-slate-200 p-6 prose prose-slate max-w-none text-sm leading-relaxed">
+    <div class="viz-card p-6 prose prose-slate max-w-none text-sm leading-relaxed">
       <h2 class="text-lg font-semibold text-slate-900 mt-0 mb-2">How to use this dashboard</h2>
       <p class="text-slate-600">
         Weekly Google Search Console data for every Nilotpal-authored Vantage Circle blog post,
@@ -991,6 +1021,32 @@ function renderTracker() {
   });
 }
 
+// The stat-tile trend companion: recent weeks in the de-emphasis grey with the
+// selected window picked out in the accent, so the hero number has a shape
+// behind it rather than sitting alone in white space.
+function heroSpark(hist, weeks = 16, w = 320, h = 44) {
+  const pts = hist.slice(-weeks);
+  if (pts.length < 2) return "";
+  const vals = pts.map(p => p.i);
+  const max = Math.max(...vals, 1);
+  const stepX = w / (pts.length - 1);
+  const y = v => h - 3 - (v / max) * (h - 8);
+  const xy = pts.map((p, i) => `${(i * stepX).toFixed(1)},${y(p.i).toFixed(1)}`);
+  const curSet = new Set(currentWeeks());
+  const firstCur = pts.findIndex(p => curSet.has(p.w));
+  const accent = firstCur > 0
+    ? `<polyline fill="none" stroke="var(--seq-450)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${xy.slice(firstCur - 1).join(" ")}"/>`
+    : "";
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto;display:block" role="img" aria-label="Impressions, last ${pts.length} weeks">
+    <polygon fill="var(--seq-450)" fill-opacity="0.07" points="0,${h} ${xy.join(" ")} ${w},${h}"/>
+    <polyline fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${xy.join(" ")}"/>
+    ${accent}
+    <circle cx="${((pts.length - 1) * stepX).toFixed(1)}" cy="${y(pts[pts.length - 1].i).toFixed(1)}" r="3.5"
+      fill="var(--viz-surface)" stroke="var(--seq-450)" stroke-width="2"/>
+  </svg>
+  <div class="viz-note mt-1">Impressions, last ${pts.length} weeks · selected window in blue</div>`;
+}
+
 // Signed change in a count where more is better (posts on page 1).
 function countDelta(cur, prev) {
   const d = cur - prev;
@@ -1112,6 +1168,8 @@ function renderOverview() {
     ["var(--bucket-nd)", "No data", cur.nd],
   ].map(([c, l, n]) => `<span class="inline-flex items-center gap-1.5"><span class="viz-key" style="background:${c}"></span>${l} <strong class="tnum">${n}</strong></span>`).join("");
 
+  document.getElementById("hero-spark").innerHTML = heroSpark(portfolioHistory());
+
   renderPortfolioChart();
 
   // ─── Movers, with a diverging bar so magnitude reads without arithmetic ──
@@ -1145,8 +1203,16 @@ function renderOverview() {
 function divergingBucketBar(label, c, scale) {
   const half = 50;                          // centre of the track, in %
   const u = v => (v / scale) * half;        // posts → % of track
-  const seg = (leftPct, widthPct, color, title) => widthPct <= 0 ? "" :
-    `<div title="${title}" style="position:absolute;left:${leftPct}%;width:calc(${widthPct}% - 2px);top:0;bottom:0;background:${color};border-radius:2px"></div>`;
+  // Value at the tip. Label sits inside the segment only when it comfortably
+  // fits; otherwise it moves outside the end so it can never be clipped.
+  const seg = (leftPct, widthPct, color, title, n, side) => {
+    if (widthPct <= 0) return "";
+    const inside = widthPct >= 7;
+    const ink = inside
+      ? `<span style="position:absolute;${side === "left" ? "left" : "right"}:6px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:#fff">${n}</span>`
+      : `<span style="position:absolute;${side === "left" ? "right:calc(100% + 5px)" : "left:calc(100% + 5px)"};top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--ink-secondary)">${n}</span>`;
+    return `<div title="${title}" style="position:absolute;left:${leftPct}%;width:calc(${widthPct}% - 2px);top:0;bottom:0;background:${color};border-radius:2px">${ink}</div>`;
+  };
   const p2L = half - u(c.p2 / 2);
   return `
     <div class="mb-3 last:mb-0">
@@ -1155,9 +1221,9 @@ function divergingBucketBar(label, c, scale) {
         <span class="tnum">${c.p1 + c.p2 + c.p3 + c.nd} posts${c.nd ? ` · ${c.nd} no data` : ""}</span>
       </div>
       <div style="position:relative;height:26px;background:#f8fafc;border-radius:3px">
-        ${seg(p2L - u(c.p1), u(c.p1), "var(--bucket-p1)", `Page 1: ${c.p1}`)}
-        ${seg(p2L, u(c.p2), "var(--bucket-p2)", `Page 2: ${c.p2}`)}
-        ${seg(half + u(c.p2 / 2), u(c.p3), "var(--bucket-p3)", `Page 3+: ${c.p3}`)}
+        ${seg(p2L - u(c.p1), u(c.p1), "var(--bucket-p1)", `Page 1: ${c.p1}`, c.p1, "left")}
+        ${seg(p2L, u(c.p2), "var(--bucket-p2)", `Page 2: ${c.p2}`, c.p2, "left")}
+        ${seg(half + u(c.p2 / 2), u(c.p3), "var(--bucket-p3)", `Page 3+: ${c.p3}`, c.p3, "right")}
         <div title="Page 2 — the neutral midpoint" style="position:absolute;left:${half}%;top:-6px;bottom:-6px;width:1px;background:var(--ink-muted)"></div>
       </div>
     </div>`;
@@ -2034,6 +2100,7 @@ setActiveQMinGate();
 updatePeriodLine();
 renderAlerts();
 renderTracker();
+switchTab("overview");
 </script>
 </body>
 </html>
