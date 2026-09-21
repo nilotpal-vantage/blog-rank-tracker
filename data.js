@@ -1,12 +1,11 @@
 // Auto-generated. Do not edit.
 const META = {
-  "history_start": "2025-09-15",
-  "history_end": "2026-09-13",
+  "history_start": "2025-09-22",
+  "history_end": "2026-09-20",
   "history_days": 364,
-  "first_week": "2025-W38",
-  "last_week": "2026-W37",
+  "first_week": "2025-W39",
+  "last_week": "2026-W38",
   "all_weeks": [
-    "2025-W38",
     "2025-W39",
     "2025-W40",
     "2025-W41",
@@ -57,8 +56,9 @@ const META = {
     "2026-W34",
     "2026-W35",
     "2026-W36",
-    "2026-W37"
+    "2026-W37",
+    "2026-W38"
   ],
-  "generated_at": "2026-09-14T04:34:20.952917Z",
+  "generated_at": "2026-09-21T04:33:48.392802Z",
   "post_count": 67
 };
