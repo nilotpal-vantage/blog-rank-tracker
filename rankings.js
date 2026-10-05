@@ -11,13 +11,6 @@ const RANKINGS = [
     ],
     "history": [
       {
-        "w": "2025-W40",
-        "p": 9.4,
-        "i": 1734,
-        "c": 21,
-        "ctr": 0.0121
-      },
-      {
         "w": "2025-W41",
         "p": 10.43,
         "i": 1995,
@@ -369,22 +362,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 23.67,
-        "i": 291,
-        "c": 0,
-        "ctr": 0.0
+        "p": 24.26,
+        "i": 326,
+        "c": 1,
+        "ctr": 0.0031
+      },
+      {
+        "w": "2026-W40",
+        "p": 21.1,
+        "i": 124,
+        "c": 5,
+        "ctr": 0.0403
       }
     ],
     "target_keyword": "advantages and disadvantages of reward systems",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 2.0,
-        "i": 5,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 2.0,
@@ -717,7 +710,7 @@ const RANKINGS = [
       {
         "w": "2026-W39",
         "p": 7.0,
-        "i": 2,
+        "i": 3,
         "c": 0,
         "ctr": 0.0
       }
@@ -733,13 +726,6 @@ const RANKINGS = [
       "employee-retention"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 38.14,
-        "i": 209,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 31.52,
@@ -1092,8 +1078,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 36.79,
-        "i": 113,
+        "p": 30.92,
+        "i": 206,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 24.02,
+        "i": 205,
         "c": 0,
         "ctr": 0.0
       }
@@ -1101,13 +1094,6 @@ const RANKINGS = [
     "target_keyword": "benefits of employee retention",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 40.53,
-        "i": 43,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 38.03,
@@ -1460,8 +1446,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 50.23,
-        "i": 39,
+        "p": 39.25,
+        "i": 64,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 25.69,
+        "i": 42,
         "c": 0,
         "ctr": 0.0
       }
@@ -1477,13 +1470,6 @@ const RANKINGS = [
       "workplace-communication"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 8.09,
-        "i": 5483,
-        "c": 4,
-        "ctr": 0.0007
-      },
       {
         "w": "2025-W41",
         "p": 8.66,
@@ -1836,8 +1822,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 49.28,
-        "i": 518,
+        "p": 47.77,
+        "i": 692,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 50.38,
+        "i": 657,
         "c": 0,
         "ctr": 0.0
       }
@@ -1845,13 +1838,6 @@ const RANKINGS = [
     "target_keyword": "business communication employee engagement",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 9.67,
-        "i": 3,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W44",
         "p": 5.4,
@@ -2019,6 +2005,13 @@ const RANKINGS = [
         "i": 3,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 46.0,
+        "i": 2,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -2032,13 +2025,6 @@ const RANKINGS = [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 7.4,
-        "i": 921,
-        "c": 6,
-        "ctr": 0.0065
-      },
       {
         "w": "2025-W41",
         "p": 7.5,
@@ -2391,8 +2377,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 24.82,
-        "i": 74,
+        "p": 24.33,
+        "i": 112,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 25.13,
+        "i": 91,
         "c": 0,
         "ctr": 0.0
       }
@@ -2400,13 +2393,6 @@ const RANKINGS = [
     "target_keyword": "causes of low employee morale",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 33.5,
-        "i": 4,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W42",
         "p": 10.0,
@@ -2630,6 +2616,13 @@ const RANKINGS = [
         "i": 1,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 11.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -2643,13 +2636,6 @@ const RANKINGS = [
       "leadership"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 40.3,
-        "i": 341,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 32.93,
@@ -3002,8 +2988,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 34.82,
-        "i": 251,
+        "p": 34.08,
+        "i": 362,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 19.69,
+        "i": 372,
         "c": 0,
         "ctr": 0.0
       }
@@ -3011,13 +3004,6 @@ const RANKINGS = [
     "target_keyword": "change leadership",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 48.14,
-        "i": 122,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 41.79,
@@ -3370,8 +3356,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 42.35,
-        "i": 134,
+        "p": 40.77,
+        "i": 204,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 16.51,
+        "i": 290,
         "c": 0,
         "ctr": 0.0
       }
@@ -3394,13 +3387,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 35.71,
-        "i": 1069,
-        "c": 2,
-        "ctr": 0.0019
-      },
       {
         "w": "2025-W41",
         "p": 35.28,
@@ -3753,8 +3739,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 77.1,
-        "i": 594,
+        "p": 76.88,
+        "i": 785,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 74.96,
+        "i": 486,
         "c": 0,
         "ctr": 0.0
       }
@@ -3762,13 +3755,6 @@ const RANKINGS = [
     "target_keyword": "company culture",
     "target_source": "auto",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 37.79,
-        "i": 280,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 36.66,
@@ -4107,8 +4093,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 68.86,
-        "i": 69,
+        "p": 71.15,
+        "i": 104,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 69.96,
+        "i": 82,
         "c": 0,
         "ctr": 0.0
       }
@@ -4329,8 +4322,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 8.77,
-        "i": 536,
+        "p": 8.73,
+        "i": 673,
+        "c": 1,
+        "ctr": 0.0015
+      },
+      {
+        "w": "2026-W40",
+        "p": 8.52,
+        "i": 656,
         "c": 0,
         "ctr": 0.0
       }
@@ -4540,6 +4540,13 @@ const RANKINGS = [
         "i": 4,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 5.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -4553,13 +4560,6 @@ const RANKINGS = [
       "workplace-communication"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 12.71,
-        "i": 4268,
-        "c": 27,
-        "ctr": 0.0063
-      },
       {
         "w": "2025-W41",
         "p": 11.46,
@@ -4912,22 +4912,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 25.79,
-        "i": 200,
+        "p": 25.48,
+        "i": 245,
         "c": 1,
-        "ctr": 0.005
+        "ctr": 0.0041
+      },
+      {
+        "w": "2026-W40",
+        "p": 20.72,
+        "i": 211,
+        "c": 2,
+        "ctr": 0.0095
       }
     ],
     "target_keyword": "constructive feedback examples",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 24.17,
-        "i": 54,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 25.08,
@@ -5284,6 +5284,13 @@ const RANKINGS = [
         "i": 20,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 76.75,
+        "i": 4,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -5297,13 +5304,6 @@ const RANKINGS = [
       "corporate-gifting"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 9.22,
-        "i": 30044,
-        "c": 589,
-        "ctr": 0.0196
-      },
       {
         "w": "2025-W41",
         "p": 8.38,
@@ -5656,22 +5656,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 30.94,
-        "i": 1508,
-        "c": 13,
-        "ctr": 0.0086
+        "p": 31.47,
+        "i": 2104,
+        "c": 14,
+        "ctr": 0.0067
+      },
+      {
+        "w": "2026-W40",
+        "p": 19.58,
+        "i": 1105,
+        "c": 8,
+        "ctr": 0.0072
       }
     ],
     "target_keyword": "corporate diwali gifts for employees",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 17.75,
-        "i": 76,
-        "c": 1,
-        "ctr": 0.0132
-      },
       {
         "w": "2025-W41",
         "p": 15.15,
@@ -6024,10 +6024,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 33.33,
-        "i": 42,
+        "p": 31.32,
+        "i": 65,
         "c": 1,
-        "ctr": 0.0238
+        "ctr": 0.0154
+      },
+      {
+        "w": "2026-W40",
+        "p": 32.33,
+        "i": 18,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -6393,10 +6400,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 17.16,
-        "i": 92,
+        "p": 19.81,
+        "i": 119,
         "c": 1,
-        "ctr": 0.0109
+        "ctr": 0.0084
+      },
+      {
+        "w": "2026-W40",
+        "p": 19.93,
+        "i": 122,
+        "c": 2,
+        "ctr": 0.0164
       }
     ],
     "target_keyword": "create a sense of belonging in the workplace",
@@ -6498,13 +6512,6 @@ const RANKINGS = [
       "team-building"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 11.43,
-        "i": 1934,
-        "c": 2,
-        "ctr": 0.001
-      },
       {
         "w": "2025-W41",
         "p": 13.03,
@@ -6857,8 +6864,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 20.58,
-        "i": 696,
+        "p": 22.07,
+        "i": 994,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 25.2,
+        "i": 1035,
         "c": 0,
         "ctr": 0.0
       }
@@ -6935,6 +6949,13 @@ const RANKINGS = [
         "i": 2,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 62.0,
+        "i": 2,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -6948,13 +6969,6 @@ const RANKINGS = [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 12.5,
-        "i": 1819,
-        "c": 7,
-        "ctr": 0.0038
-      },
       {
         "w": "2025-W41",
         "p": 13.4,
@@ -7307,22 +7321,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 37.2,
-        "i": 169,
-        "c": 1,
-        "ctr": 0.0059
+        "p": 30.79,
+        "i": 238,
+        "c": 2,
+        "ctr": 0.0084
+      },
+      {
+        "w": "2026-W40",
+        "p": 30.0,
+        "i": 251,
+        "c": 2,
+        "ctr": 0.008
       }
     ],
     "target_keyword": "dei calendar",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 9.35,
-        "i": 55,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 13.21,
@@ -7672,6 +7686,20 @@ const RANKINGS = [
         "i": 12,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W39",
+        "p": 50.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 44.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -7686,13 +7714,6 @@ const RANKINGS = [
       "management"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 20.13,
-        "i": 821,
-        "c": 8,
-        "ctr": 0.0097
-      },
       {
         "w": "2025-W41",
         "p": 18.35,
@@ -8045,8 +8066,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 76.03,
-        "i": 66,
+        "p": 74.43,
+        "i": 83,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 75.8,
+        "i": 44,
         "c": 0,
         "ctr": 0.0
       }
@@ -8054,13 +8082,6 @@ const RANKINGS = [
     "target_keyword": "diversity management",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 22.06,
-        "i": 102,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 21.61,
@@ -8413,8 +8434,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 76.37,
-        "i": 30,
+        "p": 76.58,
+        "i": 31,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 70.4,
+        "i": 15,
         "c": 0,
         "ctr": 0.0
       }
@@ -8432,13 +8460,6 @@ const RANKINGS = [
       "employee-survey"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 42.7,
-        "i": 223,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 35.53,
@@ -8791,8 +8812,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 22.89,
-        "i": 96,
+        "p": 23.52,
+        "i": 239,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 23.91,
+        "i": 334,
         "c": 0,
         "ctr": 0.0
       }
@@ -8800,13 +8828,6 @@ const RANKINGS = [
     "target_keyword": "drivers of employee engagement",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 44.85,
-        "i": 92,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 38.08,
@@ -9159,30 +9180,30 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 19.39,
-        "i": 36,
+        "p": 17.88,
+        "i": 88,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 18.38,
+        "i": 66,
         "c": 0,
         "ctr": 0.0
       }
     ]
   },
   {
-    "title": "10 of The Most Important Elements of Organizational Culture in 2023",
+    "title": "The 7 Core Elements of Organizational Culture (And How to Strengthen Each)",
     "slug": "elements-of-organizational-culture",
     "url": "https://www.vantagecircle.com/en/blog/elements-of-organizational-culture/",
     "date": "2023-12-08",
-    "updated": "2026-03-10",
+    "updated": "2026-09-29",
     "tags": [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 32.87,
-        "i": 1654,
-        "c": 3,
-        "ctr": 0.0018
-      },
       {
         "w": "2025-W41",
         "p": 36.14,
@@ -9535,8 +9556,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 32.32,
-        "i": 19,
+        "p": 42.09,
+        "i": 32,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 25.36,
+        "i": 70,
         "c": 0,
         "ctr": 0.0
       }
@@ -9544,13 +9572,6 @@ const RANKINGS = [
     "target_keyword": "elements of organizational culture",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 10.46,
-        "i": 46,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 10.38,
@@ -9903,7 +9924,14 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 59.0,
+        "p": 56.0,
+        "i": 2,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 50.0,
         "i": 1,
         "c": 0,
         "ctr": 0.0
@@ -9920,13 +9948,6 @@ const RANKINGS = [
       "management"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 7.39,
-        "i": 14713,
-        "c": 1,
-        "ctr": 0.0001
-      },
       {
         "w": "2025-W41",
         "p": 11.24,
@@ -10279,8 +10300,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 7.33,
-        "i": 4295,
+        "p": 7.72,
+        "i": 4453,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 16.13,
+        "i": 868,
         "c": 0,
         "ctr": 0.0
       }
@@ -10288,13 +10316,6 @@ const RANKINGS = [
     "target_keyword": "employee absenteeism",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 23.75,
-        "i": 80,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 25.65,
@@ -10647,8 +10668,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 51.81,
-        "i": 16,
+        "p": 45.36,
+        "i": 28,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 51.43,
+        "i": 60,
         "c": 0,
         "ctr": 0.0
       }
@@ -10664,13 +10692,6 @@ const RANKINGS = [
       "management"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 9.53,
-        "i": 3533,
-        "c": 8,
-        "ctr": 0.0023
-      },
       {
         "w": "2025-W41",
         "p": 7.61,
@@ -11023,8 +11044,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 17.69,
-        "i": 415,
+        "p": 21.55,
+        "i": 490,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 37.02,
+        "i": 222,
         "c": 0,
         "ctr": 0.0
       }
@@ -11032,13 +11060,6 @@ const RANKINGS = [
     "target_keyword": "employee development plan",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 23.6,
-        "i": 186,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 13.34,
@@ -11391,8 +11412,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 38.5,
-        "i": 30,
+        "p": 42.35,
+        "i": 37,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 60.19,
+        "i": 16,
         "c": 0,
         "ctr": 0.0
       }
@@ -11408,13 +11436,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 23.99,
-        "i": 277,
-        "c": 1,
-        "ctr": 0.0036
-      },
       {
         "w": "2025-W41",
         "p": 20.66,
@@ -11767,8 +11788,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 43.43,
-        "i": 161,
+        "p": 44.67,
+        "i": 221,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 45.56,
+        "i": 141,
         "c": 0,
         "ctr": 0.0
       }
@@ -11776,13 +11804,6 @@ const RANKINGS = [
     "target_keyword": "employee engagement and performance",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 36.19,
-        "i": 16,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 42.2,
@@ -12135,8 +12156,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 95.33,
-        "i": 3,
+        "p": 94.75,
+        "i": 4,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 84.06,
+        "i": 17,
         "c": 0,
         "ctr": 0.0
       }
@@ -12152,13 +12180,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 68.58,
-        "i": 128,
-        "c": 1,
-        "ctr": 0.0078
-      },
       {
         "w": "2025-W41",
         "p": 53.16,
@@ -12511,8 +12532,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 78.41,
-        "i": 49,
+        "p": 78.33,
+        "i": 70,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 75.71,
+        "i": 75,
         "c": 0,
         "ctr": 0.0
       }
@@ -12520,13 +12548,6 @@ const RANKINGS = [
     "target_keyword": "employee engagement and retention",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 74.36,
-        "i": 53,
-        "c": 1,
-        "ctr": 0.0189
-      },
       {
         "w": "2025-W41",
         "p": 72.33,
@@ -12879,8 +12900,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 80.69,
-        "i": 29,
+        "p": 80.3,
+        "i": 44,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 83.94,
+        "i": 32,
         "c": 0,
         "ctr": 0.0
       }
@@ -12896,13 +12924,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 12.61,
-        "i": 1617,
-        "c": 7,
-        "ctr": 0.0043
-      },
       {
         "w": "2025-W41",
         "p": 10.85,
@@ -13255,8 +13276,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 17.16,
-        "i": 972,
+        "p": 16.57,
+        "i": 1460,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 16.42,
+        "i": 1261,
         "c": 0,
         "ctr": 0.0
       }
@@ -13264,13 +13292,6 @@ const RANKINGS = [
     "target_keyword": "employee engagement ideas for december",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 8.71,
-        "i": 7,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 7.0,
@@ -13623,8 +13644,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 11.62,
-        "i": 8,
+        "p": 11.65,
+        "i": 17,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 12.5,
+        "i": 2,
         "c": 0,
         "ctr": 0.0
       }
@@ -13640,13 +13668,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 22.9,
-        "i": 242,
-        "c": 2,
-        "ctr": 0.0083
-      },
       {
         "w": "2025-W41",
         "p": 20.54,
@@ -13999,22 +14020,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 70.29,
-        "i": 28,
+        "p": 72.67,
+        "i": 45,
         "c": 1,
-        "ctr": 0.0357
+        "ctr": 0.0222
+      },
+      {
+        "w": "2026-W40",
+        "p": 68.22,
+        "i": 27,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "employee engagement in healthcare industry",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 20.4,
-        "i": 5,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W42",
         "p": 18.5,
@@ -14360,7 +14381,14 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 61.5,
+        "p": 62.0,
+        "i": 3,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 63.0,
         "i": 2,
         "c": 0,
         "ctr": 0.0
@@ -14377,13 +14405,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 52.35,
-        "i": 1182,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 51.97,
@@ -14736,8 +14757,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 44.86,
-        "i": 56,
+        "p": 35.41,
+        "i": 113,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 28.96,
+        "i": 204,
         "c": 0,
         "ctr": 0.0
       }
@@ -14745,13 +14773,6 @@ const RANKINGS = [
     "target_keyword": "employee engagement strategies",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 58.86,
-        "i": 243,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 56.47,
@@ -15104,8 +15125,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 44.04,
-        "i": 26,
+        "p": 40.19,
+        "i": 57,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 42.69,
+        "i": 58,
         "c": 0,
         "ctr": 0.0
       }
@@ -15123,13 +15151,6 @@ const RANKINGS = [
       "top-posts"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 25.18,
-        "i": 3022,
-        "c": 1,
-        "ctr": 0.0003
-      },
       {
         "w": "2025-W41",
         "p": 22.44,
@@ -15482,8 +15503,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 75.04,
-        "i": 381,
+        "p": 72.1,
+        "i": 564,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 71.04,
+        "i": 536,
         "c": 0,
         "ctr": 0.0
       }
@@ -15491,13 +15519,6 @@ const RANKINGS = [
     "target_keyword": "employee experience",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 21.44,
-        "i": 1468,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 19.74,
@@ -15850,8 +15871,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 81.0,
-        "i": 108,
+        "p": 82.0,
+        "i": 147,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 75.8,
+        "i": 162,
         "c": 0,
         "ctr": 0.0
       }
@@ -15868,13 +15896,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 26.5,
-        "i": 471,
-        "c": 2,
-        "ctr": 0.0042
-      },
       {
         "w": "2025-W41",
         "p": 21.55,
@@ -16227,22 +16248,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 38.73,
-        "i": 152,
+        "p": 40.69,
+        "i": 203,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 38.98,
+        "i": 127,
+        "c": 1,
+        "ctr": 0.0079
       }
     ],
     "target_keyword": "employee feedback examples",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 54.5,
-        "i": 26,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 57.17,
@@ -16595,30 +16616,30 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 47.37,
-        "i": 19,
+        "p": 48.43,
+        "i": 28,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 45.14,
+        "i": 21,
         "c": 0,
         "ctr": 0.0
       }
     ]
   },
   {
-    "title": "What is Employee Involvement and How Does it Improve Workplace Performance?",
+    "title": "What is Employee Involvement? Definition, Examples and How to Build It",
     "slug": "employee-involvement",
     "url": "https://www.vantagecircle.com/en/blog/employee-involvement/",
     "date": "2019-08-07",
-    "updated": "2026-03-10",
+    "updated": "2026-09-30",
     "tags": [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 17.97,
-        "i": 721,
-        "c": 7,
-        "ctr": 0.0097
-      },
       {
         "w": "2025-W41",
         "p": 17.29,
@@ -16971,22 +16992,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 43.03,
-        "i": 77,
-        "c": 1,
-        "ctr": 0.013
+        "p": 42.4,
+        "i": 97,
+        "c": 2,
+        "ctr": 0.0206
+      },
+      {
+        "w": "2026-W40",
+        "p": 40.05,
+        "i": 93,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "employee involvement",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 12.97,
-        "i": 92,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 11.73,
@@ -17339,8 +17360,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 54.86,
-        "i": 7,
+        "p": 54.78,
+        "i": 9,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 25.73,
+        "i": 15,
         "c": 0,
         "ctr": 0.0
       }
@@ -17356,13 +17384,6 @@ const RANKINGS = [
       "work-life"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 30.38,
-        "i": 2072,
-        "c": 3,
-        "ctr": 0.0014
-      },
       {
         "w": "2025-W41",
         "p": 31.61,
@@ -17715,8 +17736,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 73.52,
-        "i": 185,
+        "p": 75.0,
+        "i": 222,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 84.25,
+        "i": 125,
         "c": 0,
         "ctr": 0.0
       }
@@ -17724,13 +17752,6 @@ const RANKINGS = [
     "target_keyword": "employee productivity",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 32.17,
-        "i": 195,
-        "c": 1,
-        "ctr": 0.0051
-      },
       {
         "w": "2025-W41",
         "p": 44.74,
@@ -18083,8 +18104,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 84.84,
-        "i": 25,
+        "p": 85.35,
+        "i": 34,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 84.5,
+        "i": 38,
         "c": 0,
         "ctr": 0.0
       }
@@ -18100,13 +18128,6 @@ const RANKINGS = [
       "rewards-and-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 10.23,
-        "i": 417,
-        "c": 3,
-        "ctr": 0.0072
-      },
       {
         "w": "2025-W41",
         "p": 8.36,
@@ -18459,22 +18480,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 15.15,
-        "i": 225,
+        "p": 15.79,
+        "i": 312,
         "c": 1,
-        "ctr": 0.0044
+        "ctr": 0.0032
+      },
+      {
+        "w": "2026-W40",
+        "p": 22.83,
+        "i": 168,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "employee recognition criteria",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 3.0,
-        "i": 1,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W49",
         "p": 7.0,
@@ -18697,13 +18718,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 21.95,
-        "i": 94,
-        "c": 1,
-        "ctr": 0.0106
-      },
       {
         "w": "2025-W41",
         "p": 13.0,
@@ -19056,10 +19070,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 25.59,
-        "i": 58,
+        "p": 25.53,
+        "i": 62,
         "c": 1,
-        "ctr": 0.0172
+        "ctr": 0.0161
+      },
+      {
+        "w": "2026-W40",
+        "p": 24.21,
+        "i": 24,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "employee recognition ideas for large companies",
@@ -19315,13 +19336,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 10.93,
-        "i": 121,
-        "c": 3,
-        "ctr": 0.0248
-      },
       {
         "w": "2025-W41",
         "p": 11.53,
@@ -19674,10 +19688,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 31.25,
-        "i": 16,
+        "p": 26.52,
+        "i": 25,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 36.88,
+        "i": 25,
+        "c": 1,
+        "ctr": 0.04
       }
     ],
     "target_keyword": "employee recognition ideas for manufacturing",
@@ -19997,6 +20018,20 @@ const RANKINGS = [
         "i": 2,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W39",
+        "p": 26.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 26.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -20010,13 +20045,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 26.07,
-        "i": 406,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 23.52,
@@ -20369,8 +20397,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 60.7,
-        "i": 10,
+        "p": 52.65,
+        "i": 17,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 47.0,
+        "i": 9,
         "c": 0,
         "ctr": 0.0
       }
@@ -20378,13 +20413,6 @@ const RANKINGS = [
     "target_keyword": "employee recognition ideas",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 21.17,
-        "i": 119,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 21.41,
@@ -20601,6 +20629,13 @@ const RANKINGS = [
         "i": 2,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 83.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -20614,13 +20649,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 26.67,
-        "i": 1561,
-        "c": 2,
-        "ctr": 0.0013
-      },
       {
         "w": "2025-W41",
         "p": 22.06,
@@ -20973,22 +21001,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 35.58,
-        "i": 399,
+        "p": 34.56,
+        "i": 553,
         "c": 1,
-        "ctr": 0.0025
+        "ctr": 0.0018
+      },
+      {
+        "w": "2026-W40",
+        "p": 36.1,
+        "i": 444,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "employee recognition programs",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 32.11,
-        "i": 9,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 36.06,
@@ -21341,8 +21369,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 37.34,
-        "i": 58,
+        "p": 35.99,
+        "i": 77,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 35.32,
+        "i": 62,
         "c": 0,
         "ctr": 0.0
       }
@@ -21358,13 +21393,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 25.17,
-        "i": 35,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 13.85,
@@ -21717,8 +21745,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 17.35,
-        "i": 469,
+        "p": 15.75,
+        "i": 1022,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 15.9,
+        "i": 829,
         "c": 0,
         "ctr": 0.0
       }
@@ -21889,7 +21924,14 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 35.8,
+        "p": 36.62,
+        "i": 8,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 64.2,
         "i": 5,
         "c": 0,
         "ctr": 0.0
@@ -21906,13 +21948,6 @@ const RANKINGS = [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 20.72,
-        "i": 1767,
-        "c": 22,
-        "ctr": 0.0125
-      },
       {
         "w": "2025-W41",
         "p": 20.28,
@@ -22265,8 +22300,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 12.36,
-        "i": 409,
+        "p": 12.97,
+        "i": 591,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 18.3,
+        "i": 349,
         "c": 0,
         "ctr": 0.0
       }
@@ -22274,13 +22316,6 @@ const RANKINGS = [
     "target_keyword": "employee relationship management",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 10.54,
-        "i": 237,
-        "c": 3,
-        "ctr": 0.0127
-      },
       {
         "w": "2025-W41",
         "p": 8.24,
@@ -22633,8 +22668,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 19.0,
-        "i": 18,
+        "p": 20.6,
+        "i": 25,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 23.21,
+        "i": 24,
         "c": 0,
         "ctr": 0.0
       }
@@ -22650,13 +22692,6 @@ const RANKINGS = [
       "employee-retention"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 7.52,
-        "i": 862,
-        "c": 15,
-        "ctr": 0.0174
-      },
       {
         "w": "2025-W41",
         "p": 7.6,
@@ -23009,10 +23044,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 10.41,
-        "i": 94,
+        "p": 11.39,
+        "i": 108,
         "c": 3,
-        "ctr": 0.0319
+        "ctr": 0.0278
+      },
+      {
+        "w": "2026-W40",
+        "p": 11.64,
+        "i": 81,
+        "c": 1,
+        "ctr": 0.0123
       }
     ],
     "target_keyword": "employee retention construction industry",
@@ -23080,6 +23122,13 @@ const RANKINGS = [
         "i": 1,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 24.5,
+        "i": 2,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -23094,13 +23143,6 @@ const RANKINGS = [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 24.08,
-        "i": 2261,
-        "c": 2,
-        "ctr": 0.0009
-      },
       {
         "w": "2025-W41",
         "p": 23.45,
@@ -23453,22 +23495,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 42.09,
-        "i": 438,
+        "p": 40.97,
+        "i": 635,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 42.33,
+        "i": 534,
+        "c": 1,
+        "ctr": 0.0019
       }
     ],
     "target_keyword": "employee satisfaction",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 19.01,
-        "i": 608,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 18.05,
@@ -23821,8 +23863,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 41.76,
-        "i": 150,
+        "p": 40.99,
+        "i": 201,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 38.33,
+        "i": 221,
         "c": 0,
         "ctr": 0.0
       }
@@ -23838,13 +23887,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 27.71,
-        "i": 1169,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 24.62,
@@ -24197,22 +24239,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 33.86,
-        "i": 228,
+        "p": 34.42,
+        "i": 275,
         "c": 1,
-        "ctr": 0.0044
+        "ctr": 0.0036
+      },
+      {
+        "w": "2026-W40",
+        "p": 35.22,
+        "i": 218,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "employee turnover",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 81.2,
-        "i": 69,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 75.32,
@@ -24565,8 +24607,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 30.48,
-        "i": 112,
+        "p": 31.18,
+        "i": 132,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 29.7,
+        "i": 115,
         "c": 0,
         "ctr": 0.0
       }
@@ -24582,13 +24631,6 @@ const RANKINGS = [
       "rewards-and-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 21.27,
-        "i": 829,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 18.28,
@@ -24941,8 +24983,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 32.9,
-        "i": 70,
+        "p": 33.37,
+        "i": 106,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 38.03,
+        "i": 67,
         "c": 0,
         "ctr": 0.0
       }
@@ -24950,13 +24999,6 @@ const RANKINGS = [
     "target_keyword": "extrinsic motivation",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 33.76,
-        "i": 34,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 28.62,
@@ -25309,8 +25351,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 27.16,
-        "i": 25,
+        "p": 24.94,
+        "i": 36,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 26.26,
+        "i": 23,
         "c": 0,
         "ctr": 0.0
       }
@@ -25384,10 +25433,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 6.14,
-        "i": 97,
+        "p": 6.2,
+        "i": 127,
         "c": 1,
-        "ctr": 0.0103
+        "ctr": 0.0079
+      },
+      {
+        "w": "2026-W40",
+        "p": 6.1,
+        "i": 139,
+        "c": 3,
+        "ctr": 0.0216
       }
     ],
     "target_keyword": "feedforward examples",
@@ -25451,7 +25507,14 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 4.39,
+        "p": 4.57,
+        "i": 23,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 4.61,
         "i": 18,
         "c": 0,
         "ctr": 0.0
@@ -25468,13 +25531,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 13.07,
-        "i": 1817,
-        "c": 7,
-        "ctr": 0.0039
-      },
       {
         "w": "2025-W41",
         "p": 12.71,
@@ -25827,8 +25883,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 33.22,
-        "i": 54,
+        "p": 31.88,
+        "i": 77,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 24.14,
+        "i": 50,
         "c": 0,
         "ctr": 0.0
       }
@@ -26118,8 +26181,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 22.0,
-        "i": 8,
+        "p": 21.78,
+        "i": 9,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 26.4,
+        "i": 5,
         "c": 0,
         "ctr": 0.0
       }
@@ -26405,7 +26475,14 @@ const RANKINGS = [
       {
         "w": "2026-W39",
         "p": 11.8,
-        "i": 317,
+        "i": 678,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 13.8,
+        "i": 194,
         "c": 0,
         "ctr": 0.0
       }
@@ -26437,6 +26514,20 @@ const RANKINGS = [
       {
         "w": "2026-W36",
         "p": 20.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W39",
+        "p": 28.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 29.0,
         "i": 1,
         "c": 0,
         "ctr": 0.0
@@ -26518,8 +26609,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 7.62,
-        "i": 8,
+        "p": 5.6,
+        "i": 15,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 4.8,
+        "i": 5,
         "c": 0,
         "ctr": 0.0
       }
@@ -26560,13 +26658,6 @@ const RANKINGS = [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 28.25,
-        "i": 232,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 17.61,
@@ -26919,8 +27010,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 42.87,
-        "i": 47,
+        "p": 38.22,
+        "i": 74,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 48.83,
+        "i": 48,
         "c": 0,
         "ctr": 0.0
       }
@@ -26928,13 +27026,6 @@ const RANKINGS = [
     "target_keyword": "how to measure company culture",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 50.22,
-        "i": 9,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 48.0,
@@ -27245,8 +27336,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 27.24,
-        "i": 17,
+        "p": 28.61,
+        "i": 23,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 38.38,
+        "i": 8,
         "c": 0,
         "ctr": 0.0
       }
@@ -27262,13 +27360,6 @@ const RANKINGS = [
       "team-building"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 21.36,
-        "i": 11826,
-        "c": 190,
-        "ctr": 0.0161
-      },
       {
         "w": "2025-W41",
         "p": 18.96,
@@ -27621,22 +27712,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 37.26,
-        "i": 1480,
+        "p": 38.14,
+        "i": 1927,
         "c": 2,
-        "ctr": 0.0014
+        "ctr": 0.001
+      },
+      {
+        "w": "2026-W40",
+        "p": 39.65,
+        "i": 1578,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "ice breaker games for work",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 14.2,
-        "i": 10,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 18.17,
@@ -27993,6 +28084,13 @@ const RANKINGS = [
         "i": 1,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 55.0,
+        "i": 3,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -28007,13 +28105,6 @@ const RANKINGS = [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 35.02,
-        "i": 592,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 14.42,
@@ -28366,7 +28457,14 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 29.34,
+        "p": 45.05,
+        "i": 269,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 48.87,
         "i": 141,
         "c": 0,
         "ctr": 0.0
@@ -28375,13 +28473,6 @@ const RANKINGS = [
     "target_keyword": "improve employee experience",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 43.37,
-        "i": 90,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 44.87,
@@ -28727,8 +28818,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 91.5,
-        "i": 4,
+        "p": 92.57,
+        "i": 7,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 93.92,
+        "i": 13,
         "c": 0,
         "ctr": 0.0
       }
@@ -28744,13 +28842,6 @@ const RANKINGS = [
       "company-culture"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 47.68,
-        "i": 210,
-        "c": 1,
-        "ctr": 0.0048
-      },
       {
         "w": "2025-W41",
         "p": 36.22,
@@ -29103,8 +29194,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 77.98,
-        "i": 42,
+        "p": 76.96,
+        "i": 50,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 76.9,
+        "i": 40,
         "c": 0,
         "ctr": 0.0
       }
@@ -29112,13 +29210,6 @@ const RANKINGS = [
     "target_keyword": "innovation culture",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 36.0,
-        "i": 2,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 38.0,
@@ -29464,8 +29555,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 78.44,
-        "i": 9,
+        "p": 78.3,
+        "i": 10,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 84.8,
+        "i": 5,
         "c": 0,
         "ctr": 0.0
       }
@@ -29481,13 +29579,6 @@ const RANKINGS = [
       "rewards-and-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 8.84,
-        "i": 724,
-        "c": 2,
-        "ctr": 0.0028
-      },
       {
         "w": "2025-W41",
         "p": 7.15,
@@ -29840,8 +29931,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 8.07,
-        "i": 162,
+        "p": 8.02,
+        "i": 203,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 8.37,
+        "i": 179,
         "c": 0,
         "ctr": 0.0
       }
@@ -29849,13 +29947,6 @@ const RANKINGS = [
     "target_keyword": "intangible rewards",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 5.23,
-        "i": 91,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 5.35,
@@ -30208,8 +30299,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 5.12,
-        "i": 52,
+        "p": 5.51,
+        "i": 68,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 8.68,
+        "i": 31,
         "c": 0,
         "ctr": 0.0
       }
@@ -30225,13 +30323,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 9.13,
-        "i": 38,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 7.66,
@@ -30584,8 +30675,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 24.47,
-        "i": 58,
+        "p": 26.95,
+        "i": 133,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 28.24,
+        "i": 123,
         "c": 0,
         "ctr": 0.0
       }
@@ -30593,13 +30691,6 @@ const RANKINGS = [
     "target_keyword": "july employee engagement ideas",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 6.0,
-        "i": 2,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 4.0,
@@ -30938,8 +31029,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 33.0,
-        "i": 4,
+        "p": 27.71,
+        "i": 7,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 16.0,
+        "i": 3,
         "c": 0,
         "ctr": 0.0
       }
@@ -30956,13 +31054,6 @@ const RANKINGS = [
       "leadership"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 13.88,
-        "i": 93,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 10.51,
@@ -31319,18 +31410,18 @@ const RANKINGS = [
         "i": 4,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 4.0,
+        "i": 7,
+        "c": 1,
+        "ctr": 0.1429
       }
     ],
     "target_keyword": "leadership accountability in recognition practices",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 3.0,
-        "i": 3,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 3.0,
@@ -31635,22 +31726,15 @@ const RANKINGS = [
     ]
   },
   {
-    "title": "9 Most Popular Leadership Styles to Lead Effectively. Find Yours!",
+    "title": "Leadership Styles: The 9 Main Types and How to Find Yours",
     "slug": "leadership-styles",
     "url": "https://www.vantagecircle.com/en/blog/leadership-styles/",
     "date": "2020-07-21",
-    "updated": "2026-03-10",
+    "updated": "2026-09-28",
     "tags": [
       "leadership"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 32.36,
-        "i": 3841,
-        "c": 13,
-        "ctr": 0.0034
-      },
       {
         "w": "2025-W41",
         "p": 31.39,
@@ -32003,8 +32087,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 26.86,
-        "i": 293,
+        "p": 27.05,
+        "i": 424,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 34.01,
+        "i": 170,
         "c": 0,
         "ctr": 0.0
       }
@@ -32012,13 +32103,6 @@ const RANKINGS = [
     "target_keyword": "leadership styles",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 59.1,
-        "i": 172,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 51.38,
@@ -32354,6 +32438,13 @@ const RANKINGS = [
         "i": 9,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 86.0,
+        "i": 3,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -32453,7 +32544,14 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 5.5,
+        "p": 5.2,
+        "i": 5,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 5.25,
         "i": 4,
         "c": 0,
         "ctr": 0.0
@@ -32473,13 +32571,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 10.03,
-        "i": 121,
-        "c": 1,
-        "ctr": 0.0083
-      },
       {
         "w": "2025-W41",
         "p": 11.0,
@@ -32832,8 +32923,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 30.57,
-        "i": 7,
+        "p": 28.17,
+        "i": 12,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 24.23,
+        "i": 22,
         "c": 0,
         "ctr": 0.0
       }
@@ -32841,13 +32939,6 @@ const RANKINGS = [
     "target_keyword": "march employee engagement ideas",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 10.86,
-        "i": 7,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 10.44,
@@ -33200,8 +33291,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 15.5,
-        "i": 2,
+        "p": 15.2,
+        "i": 5,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 15.7,
+        "i": 10,
         "c": 0,
         "ctr": 0.0
       }
@@ -33217,13 +33315,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 9.4,
-        "i": 377,
-        "c": 3,
-        "ctr": 0.008
-      },
       {
         "w": "2025-W41",
         "p": 7.88,
@@ -33576,22 +33667,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 12.56,
-        "i": 189,
+        "p": 13.51,
+        "i": 286,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 12.1,
+        "i": 198,
+        "c": 1,
+        "ctr": 0.0051
       }
     ],
     "target_keyword": "employee engagement objectives",
     "target_source": "auto",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 4.19,
-        "i": 36,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 4.65,
@@ -33944,8 +34035,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 11.33,
-        "i": 49,
+        "p": 10.84,
+        "i": 80,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 6.74,
+        "i": 57,
         "c": 0,
         "ctr": 0.0
       }
@@ -33961,13 +34059,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 10.88,
-        "i": 1657,
-        "c": 20,
-        "ctr": 0.0121
-      },
       {
         "w": "2025-W41",
         "p": 11.12,
@@ -34320,22 +34411,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 29.26,
-        "i": 212,
+        "p": 27.42,
+        "i": 302,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 25.15,
+        "i": 273,
+        "c": 1,
+        "ctr": 0.0037
       }
     ],
     "target_keyword": "peer to peer recognition ideas",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 6.34,
-        "i": 121,
-        "c": 2,
-        "ctr": 0.0165
-      },
       {
         "w": "2025-W41",
         "p": 6.1,
@@ -34688,8 +34779,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 8.81,
-        "i": 58,
+        "p": 10.77,
+        "i": 94,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 9.8,
+        "i": 70,
         "c": 0,
         "ctr": 0.0
       }
@@ -34705,13 +34803,6 @@ const RANKINGS = [
       "workplace-communication"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 15.06,
-        "i": 6162,
-        "c": 62,
-        "ctr": 0.0101
-      },
       {
         "w": "2025-W41",
         "p": 13.93,
@@ -35064,22 +35155,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 30.86,
-        "i": 316,
+        "p": 31.61,
+        "i": 420,
         "c": 4,
-        "ctr": 0.0127
+        "ctr": 0.0095
+      },
+      {
+        "w": "2026-W40",
+        "p": 27.49,
+        "i": 297,
+        "c": 2,
+        "ctr": 0.0067
       }
     ],
     "target_keyword": "employee feedback",
     "target_source": "auto",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 63.47,
-        "i": 72,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 60.99,
@@ -35337,13 +35428,6 @@ const RANKINGS = [
       "employee-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 8.11,
-        "i": 233,
-        "c": 2,
-        "ctr": 0.0086
-      },
       {
         "w": "2025-W41",
         "p": 8.63,
@@ -35696,8 +35780,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 14.89,
-        "i": 28,
+        "p": 14.58,
+        "i": 33,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 20.38,
+        "i": 21,
         "c": 0,
         "ctr": 0.0
       }
@@ -35705,13 +35796,6 @@ const RANKINGS = [
     "target_keyword": "psychology of employee recognition",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 3.0,
-        "i": 2,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W42",
         "p": 2.14,
@@ -36057,8 +36141,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 11.9,
-        "i": 10,
+        "p": 11.69,
+        "i": 13,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 11.29,
+        "i": 7,
         "c": 0,
         "ctr": 0.0
       }
@@ -36168,8 +36259,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 5.43,
-        "i": 7,
+        "p": 8.56,
+        "i": 9,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 10.0,
+        "i": 6,
         "c": 0,
         "ctr": 0.0
       }
@@ -36457,8 +36555,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 11.89,
-        "i": 158,
+        "p": 11.6,
+        "i": 233,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 9.66,
+        "i": 196,
         "c": 0,
         "ctr": 0.0
       }
@@ -36696,6 +36801,13 @@ const RANKINGS = [
         "i": 1,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 32.5,
+        "i": 4,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -36709,13 +36821,6 @@ const RANKINGS = [
       "rewards-and-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 5.45,
-        "i": 230,
-        "c": 2,
-        "ctr": 0.0087
-      },
       {
         "w": "2025-W41",
         "p": 5.76,
@@ -37068,8 +37173,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 12.89,
-        "i": 19,
+        "p": 11.83,
+        "i": 24,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 11.24,
+        "i": 17,
         "c": 0,
         "ctr": 0.0
       }
@@ -37212,8 +37324,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 5.25,
-        "i": 4,
+        "p": 5.6,
+        "i": 5,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 5.0,
+        "i": 2,
         "c": 0,
         "ctr": 0.0
       }
@@ -37231,13 +37350,6 @@ const RANKINGS = [
       "workplace-communication"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 12.46,
-        "i": 68,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 8.03,
@@ -37590,8 +37702,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 12.0,
-        "i": 7,
+        "p": 13.82,
+        "i": 11,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 9.0,
+        "i": 1,
         "c": 0,
         "ctr": 0.0
       }
@@ -37599,13 +37718,6 @@ const RANKINGS = [
     "target_keyword": "role of executive communication in employee recognition",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 1.67,
-        "i": 3,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W44",
         "p": 1.05,
@@ -37916,8 +38028,8 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 19.0,
-        "i": 1,
+        "p": 17.0,
+        "i": 3,
         "c": 0,
         "ctr": 0.0
       }
@@ -37934,13 +38046,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 22.61,
-        "i": 564,
-        "c": 2,
-        "ctr": 0.0035
-      },
       {
         "w": "2025-W41",
         "p": 22.31,
@@ -38293,10 +38398,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 14.88,
-        "i": 100,
+        "p": 16.78,
+        "i": 122,
         "c": 3,
-        "ctr": 0.03
+        "ctr": 0.0246
+      },
+      {
+        "w": "2026-W40",
+        "p": 13.25,
+        "i": 116,
+        "c": 0,
+        "ctr": 0.0
       }
     ],
     "target_keyword": "rules for teamwork",
@@ -38588,6 +38700,13 @@ const RANKINGS = [
         "i": 2,
         "c": 0,
         "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 22.0,
+        "i": 1,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -38602,13 +38721,6 @@ const RANKINGS = [
       "recognition-tax"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 9.88,
-        "i": 1034,
-        "c": 7,
-        "ctr": 0.0068
-      },
       {
         "w": "2025-W41",
         "p": 8.92,
@@ -38961,22 +39073,22 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 6.93,
-        "i": 676,
+        "p": 7.82,
+        "i": 866,
         "c": 2,
-        "ctr": 0.003
+        "ctr": 0.0023
+      },
+      {
+        "w": "2026-W40",
+        "p": 7.25,
+        "i": 765,
+        "c": 3,
+        "ctr": 0.0039
       }
     ],
     "target_keyword": "spot award",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 5.3,
-        "i": 177,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 4.02,
@@ -39329,10 +39441,17 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 4.38,
-        "i": 155,
+        "p": 4.42,
+        "i": 197,
         "c": 2,
-        "ctr": 0.0129
+        "ctr": 0.0102
+      },
+      {
+        "w": "2026-W40",
+        "p": 4.45,
+        "i": 182,
+        "c": 0,
+        "ctr": 0.0
       }
     ]
   },
@@ -39426,7 +39545,14 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 9.33,
+        "p": 11.67,
+        "i": 6,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 6.33,
         "i": 3,
         "c": 0,
         "ctr": 0.0
@@ -39468,13 +39594,6 @@ const RANKINGS = [
       "management"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 54.13,
-        "i": 491,
-        "c": 1,
-        "ctr": 0.002
-      },
       {
         "w": "2025-W41",
         "p": 53.97,
@@ -39827,8 +39946,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 54.17,
-        "i": 562,
+        "p": 53.54,
+        "i": 725,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 52.65,
+        "i": 560,
         "c": 0,
         "ctr": 0.0
       }
@@ -39836,13 +39962,6 @@ const RANKINGS = [
     "target_keyword": "team coaching",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 65.94,
-        "i": 160,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 69.68,
@@ -40195,8 +40314,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 63.64,
-        "i": 301,
+        "p": 63.49,
+        "i": 374,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 60.93,
+        "i": 284,
         "c": 0,
         "ctr": 0.0
       }
@@ -40212,13 +40338,6 @@ const RANKINGS = [
       "team-building"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 15.54,
-        "i": 534,
-        "c": 1,
-        "ctr": 0.0019
-      },
       {
         "w": "2025-W41",
         "p": 15.72,
@@ -40571,8 +40690,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 44.06,
-        "i": 103,
+        "p": 44.28,
+        "i": 138,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 42.49,
+        "i": 111,
         "c": 0,
         "ctr": 0.0
       }
@@ -40580,13 +40706,6 @@ const RANKINGS = [
     "target_keyword": "team cohesion",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 48.74,
-        "i": 27,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 34.54,
@@ -40939,8 +41058,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 60.59,
-        "i": 17,
+        "p": 61.85,
+        "i": 26,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 49.8,
+        "i": 20,
         "c": 0,
         "ctr": 0.0
       }
@@ -40956,13 +41082,6 @@ const RANKINGS = [
       "workplace-communication"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 40.08,
-        "i": 687,
-        "c": 4,
-        "ctr": 0.0058
-      },
       {
         "w": "2025-W41",
         "p": 36.79,
@@ -41315,8 +41434,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 56.44,
-        "i": 164,
+        "p": 55.77,
+        "i": 209,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 51.4,
+        "i": 230,
         "c": 0,
         "ctr": 0.0
       }
@@ -41324,13 +41450,6 @@ const RANKINGS = [
     "target_keyword": "team communication",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 36.44,
-        "i": 103,
-        "c": 0,
-        "ctr": 0.0
-      },
       {
         "w": "2025-W41",
         "p": 39.65,
@@ -41683,8 +41802,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 60.59,
-        "i": 81,
+        "p": 58.12,
+        "i": 107,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 50.78,
+        "i": 132,
         "c": 0,
         "ctr": 0.0
       }
@@ -41700,13 +41826,6 @@ const RANKINGS = [
       "employee-engagement"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 10.81,
-        "i": 826,
-        "c": 9,
-        "ctr": 0.0109
-      },
       {
         "w": "2025-W41",
         "p": 9.75,
@@ -42059,8 +42178,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 29.34,
-        "i": 141,
+        "p": 30.85,
+        "i": 198,
+        "c": 1,
+        "ctr": 0.0051
+      },
+      {
+        "w": "2026-W40",
+        "p": 34.53,
+        "i": 135,
         "c": 0,
         "ctr": 0.0
       }
@@ -42068,13 +42194,6 @@ const RANKINGS = [
     "target_keyword": "types of employee engagement",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 6.07,
-        "i": 109,
-        "c": 1,
-        "ctr": 0.0092
-      },
       {
         "w": "2025-W41",
         "p": 6.32,
@@ -42427,8 +42546,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 24.74,
-        "i": 35,
+        "p": 25.3,
+        "i": 53,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 23.43,
+        "i": 23,
         "c": 0,
         "ctr": 0.0
       }
@@ -42444,13 +42570,6 @@ const RANKINGS = [
       "rewards-and-recognition"
     ],
     "history": [
-      {
-        "w": "2025-W40",
-        "p": 7.18,
-        "i": 3491,
-        "c": 30,
-        "ctr": 0.0086
-      },
       {
         "w": "2025-W41",
         "p": 6.6,
@@ -42803,8 +42922,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 47.48,
-        "i": 46,
+        "p": 47.1,
+        "i": 69,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 60.22,
+        "i": 54,
         "c": 0,
         "ctr": 0.0
       }
@@ -42812,13 +42938,6 @@ const RANKINGS = [
     "target_keyword": "types of rewards",
     "target_source": "manual",
     "target_history": [
-      {
-        "w": "2025-W40",
-        "p": 6.31,
-        "i": 118,
-        "c": 2,
-        "ctr": 0.0169
-      },
       {
         "w": "2025-W41",
         "p": 4.68,
@@ -43171,8 +43290,15 @@ const RANKINGS = [
       },
       {
         "w": "2026-W39",
-        "p": 36.23,
-        "i": 13,
+        "p": 32.5,
+        "i": 16,
+        "c": 0,
+        "ctr": 0.0
+      },
+      {
+        "w": "2026-W40",
+        "p": 53.43,
+        "i": 7,
         "c": 0,
         "ctr": 0.0
       }
